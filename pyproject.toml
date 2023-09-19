@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ff-py-sdk"
+authors = [
+  { name="algolog", email="algolog@tuta.io" },
+]
+description = "Unofficial Python SDK for the Folks Finance Protocol"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "py-algorand-sdk >= 2.0.0",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dynamic = ["version"]
+
+[project.urls]
+homepage = "https://github.com/algolog/ff-py-sdk"
+repository = "https://github.com/algolog/ff-py-sdk"
+
+[tool.setuptools.dynamic]
+version = {attr = "ffsdk.__version__"}
