@@ -53,6 +53,7 @@ def getDistributorInfo(
     premintEnd = state.get("premint_end", 0)
     commitEnd = state.get("commit_end", 0)
     periodEnd = state.get("period_end", 0)
+    fee = state.get("fee", 0)
     totalCommitment = state.get("total_commitment", 0)
     isBurningPaused = bool(state.get("is_burning_paused", 0))
 
@@ -61,6 +62,7 @@ def getDistributorInfo(
         premintEnd,
         commitEnd,
         periodEnd,
+        fee,
         totalCommitment,
         isBurningPaused,
     )

@@ -8,6 +8,7 @@ class DistributorInfo:
     premintEnd: int  # unix timestamp for the end of the pre-mint period
     commitEnd: int  # unix timestamp for end of the commitment period
     periodEnd: int  # unix timestamp for end of the governance period
+    fee: int  # minting fee 4 d.p.
     totalCommitment: int  # total amount of ALGOs committed
     isBurningPaused: bool  # flag to indicate if users can burn their ALGO for gALGO
 
