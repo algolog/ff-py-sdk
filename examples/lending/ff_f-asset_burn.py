@@ -48,7 +48,7 @@ print(f"User f-asset balance: {user_holding:_}")
 print(f"Part to burn: {part_to_burn}")
 print(f"Burn amount: {burn_amount:_}")
 
-# calculate recieve amount
+# calculate receive amount
 receivedAssetAmount = 0  # set to zero in call for dynamic return
 calculated_return = calcWithdrawReturn(burn_amount, depositInterestIndex)
 print(f"Asking to receive (zero = dynamic): {receivedAssetAmount:_}")
