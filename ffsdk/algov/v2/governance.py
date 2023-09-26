@@ -8,10 +8,21 @@ from algosdk.transaction import (
     SuggestedParams,
     Transaction,
 )
+from algosdk.atomic_transaction_composer import (
+    AtomicTransactionComposer,
+    TransactionWithSigner,
+)
 from algosdk.logic import get_application_address
 from .constants.abiContracts import abiDistributor
 from ...state_utils import get_global_state, get_local_state_at_app
-from ..common.datatypes import Dispenser, Distributor
+from ...transaction_utils import (
+    signer,
+    sp_fee,
+    remove_signer_and_group,
+    transferAlgoOrAsset,
+    addEscrowNoteTransaction,
+)
+from ..common import Dispenser, Distributor
 from .datatypes import (
     DistributorInfo,
     UserCommitmentInfo,
@@ -166,3 +177,88 @@ def getEscrowGovernanceStatus(
         balance=algoBalance,
         isOnline=isOnline,
     )
+
+
+def prepareMintTransactions(
+    dispenser: Dispenser,
+    distributor: Distributor,
+    senderAddr: str,
+    amount: int,
+    ensureCommit: bool,
+    params: SuggestedParams,
+    note: bytes | None,
+) -> list[Transaction]:
+    """
+    Returns a group transaction to mint gALGO for ALGO at a one-to-one rate.
+
+    If you want to commit then MUST be paired with prepareCommitOrVoteTransaction
+    as to send the required note to the signup address.
+
+    @param dispenser - dispenser to mint gALGO from
+    @param distributor - distributor that calls dispenser and to send ALGO to
+    @param senderAddr - account address for the sender
+    @param amount - amount of ALGO to send and gALGO to mint
+    @param ensureCommit - whether to ensure in commitment period
+    @param params - suggested params for the transactions with the fees overwritten
+    @param note - optional note to distinguish who is the minter (must pass to be eligible for revenue share)
+    @returns Transaction[] mint transactions
+    """
+    escrowAddr = getDistributorLogicSig(senderAddr).address()
+
+    sendAlgo = transferAlgoOrAsset(0, senderAddr, escrowAddr, amount, sp_fee(params, 0))
+
+    atc = AtomicTransactionComposer()
+    atc.add_method_call(
+        sender=senderAddr,
+        signer=signer,
+        app_id=distributor.appId,
+        method=abiDistributor.get_method_by_name("mint"),
+        method_args=[
+            TransactionWithSigner(sendAlgo, signer),
+            escrowAddr,
+            dispenser.appId,
+            dispenser.gAlgoId,
+            ensureCommit,
+        ],
+        sp=sp_fee(params, fee=4000),
+        note=note,
+    )
+    return remove_signer_and_group(atc.build_group())
+
+
+def prepareBurnTransactions(
+    dispenser: Dispenser,
+    distributor: Distributor,
+    senderAddr: str,
+    amount: int,
+    params: SuggestedParams,
+) -> list[Transaction]:
+    """
+    Returns a group transaction to burn gALGO for ALGO at a one-to-one rate.
+    Must be after period end.
+
+    @param dispenser - dispenser to send gALGO to
+    @param distributor - distributor that calls dispenser and to send ALGO to
+    @param senderAddr - account address for the sender
+    @param amount - amount of gALGO to send and ALGO to receive
+    @param params - suggested params for the transactions with the fees overwritten
+    @returns Transaction[] burn transactions
+    """
+    sendgALGO = transferAlgoOrAsset(
+        dispenser.gAlgoId,
+        senderAddr,
+        get_application_address(dispenser.appId),
+        amount,
+        sp_fee(params, fee=0),
+    )
+
+    atc = AtomicTransactionComposer()
+    atc.add_method_call(
+        sender=senderAddr,
+        signer=signer,
+        app_id=distributor.appId,
+        method=abiDistributor.get_method_by_name("burn"),
+        method_args=[TransactionWithSigner(sendgALGO, signer), dispenser.appId],
+        sp=sp_fee(params, fee=3000),
+    )
+    return remove_signer_and_group(atc.build_group())
