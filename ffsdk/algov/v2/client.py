@@ -1,5 +1,9 @@
 from ffsdk.config import Network
-from .constants.mainnet_constants import govDistributor8, govDistributor7
+from .constants.mainnet_constants import (
+        govDistributor7,
+        govDistributor8,
+        govDistributor9,
+)
 
 
 class AlgoLiquidGovernanceClient:
@@ -13,5 +17,6 @@ class AlgoLiquidGovernanceClient:
         if self.network == Network.MAINNET:
             self.distributor = govDistributor8
             self.prev_distributor = govDistributor7
+            self.next_distributor = govDistributor9
         else:
             raise ValueError("Unsupported network.")
