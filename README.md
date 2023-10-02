@@ -4,9 +4,11 @@ Some functions from the [folks-finance-js-sdk](https://github.com/Folks-Finance/
 * Work in progress, use at your own risk.
 * Function names and arguments are preserved from the JS SDK. Camel case and snake case code styles are sometimes mixed.
 
-##
+## Progress overview
+
+### Lending
 <details>
-<summary>Readiness of the state retrieval functions</summary>
+<summary>State retrieval functions</summary>
 
 * Deposit
     - [x] `retrievePoolManagerInfo`
@@ -52,7 +54,7 @@ Some functions from the [folks-finance-js-sdk](https://github.com/Folks-Finance/
 </details>
 
 <details>
-<summary>Readiness of the transaction preparation functions</summary>
+<summary>Transaction preparation functions</summary>
 
 * Deposit
     - [x] `prepareAddDepositEscrowToDeposits`
@@ -95,6 +97,37 @@ Some functions from the [folks-finance-js-sdk](https://github.com/Folks-Finance/
 
  * Oracle
     - [x] `prepareRefreshPricesInOracleAdapter` (partial, without LPPools oracle update)
+</details>
+
+### Algo liquid governance
+<details>
+<summary>State retrieval functions</summary>
+
+ * Common
+    - [x] `getDispenserInfo`
+
+ * Governance v2
+    - [x] `getDistributorLogicSig`
+    - [x] `getDistributorInfo`
+    - [x] `getUserLiquidGovernanceInfo`
+    - [x] `getEscrowGovernanceStatus`
+</details>
+
+<details>
+<summary>Transaction preparation functions</summary>
+ 
+ * Governance v2
+   
+    - [ ] `prepareAddLiquidGovernanceEscrowTransactions`
+    - [x] `prepareMintTransactions`
+    - [ ] `prepareUnmintPremintTransaction`
+    - [ ] `prepareUnmintTransactions`
+    - [ ] `prepareClaimPremintTransaction`
+    - [ ] `prepareRegisterEscrowOnlineTransaction`
+    - [ ] `prepareRegisterEscrowOfflineTransaction`
+    - [ ] `prepareCommitOrVoteTransaction`
+    - [ ] `prepareRemoveLiquidGovernanceEscrowTransactions`
+    - [x] `prepareBurnTransactions`
 </details>
 
 ## Installation
