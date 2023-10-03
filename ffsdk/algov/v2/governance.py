@@ -226,6 +226,71 @@ def prepareMintTransactions(
     return remove_signer_and_group(atc.build_group())
 
 
+def prepareUnmintPremintTransaction(
+    distributor: Distributor,
+    senderAddr: str,
+    amount: int,
+    params: SuggestedParams,
+    note: bytes | None,
+) -> list[Transaction]:
+    """
+    Returns a transaction to unmint pre-minted gALGO for ALGO at a one-to-one rate.
+    Must be in commitment period. By unminting, you will lose your governance rewards.
+
+    @param distributor - distributor that calls dispenser and to send ALGO to
+    @param senderAddr - account address for the sender
+    @param amount - amount of gALGO to unmint and ALGO to receive
+    @param params - suggested params for the transactions with the fees overwritten
+    @param note - optional note to distinguish who is the unminter (must pass to be eligible for revenue share)
+    @returns Transaction unmint pre-mint transaction
+    """
+    escrowAddr = getDistributorLogicSig(senderAddr).address()
+
+    atc = AtomicTransactionComposer()
+    atc.add_method_call(
+        sender=senderAddr,
+        signer=signer,
+        app_id=distributor.appId,
+        method=abiDistributor.get_method_by_name("unmint_premint"),
+        method_args=[escrowAddr, amount],
+        sp=sp_fee(params, fee=4000),
+        note=note,
+    )
+    return remove_signer_and_group(atc.build_group())
+
+
+def prepareCommitOrVoteTransaction(
+    distributor: Distributor,
+    senderAddr: str,
+    destAddr: str,
+    note: str,
+    params: SuggestedParams,
+) -> Transaction:
+    """
+    Returns a transaction to commit or vote in governance.
+
+    @param distributor - distributor that has escrow
+    @param senderAddr - account address for the sender
+    @param destAddr - destination address
+    @param note - note to send
+    @param params - suggested params the transactions with the fees overwritten
+    @returns Transaction commit/vote transaction
+    """
+    escrowAddr = getDistributorLogicSig(senderAddr).address()
+
+    atc = AtomicTransactionComposer()
+    atc.add_method_call(
+        sender=senderAddr,
+        signer=signer,
+        app_id=distributor.appId,
+        method=abiDistributor.get_method_by_name("governance"),
+        method_args=[escrowAddr, destAddr, note],
+        sp=sp_fee(params, fee=2000),
+    )
+    txns = remove_signer_and_group(atc.build_group())
+    return txns[0]
+
+
 def prepareBurnTransactions(
     dispenser: Dispenser,
     distributor: Distributor,
