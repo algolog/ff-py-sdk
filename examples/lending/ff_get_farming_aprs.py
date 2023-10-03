@@ -83,7 +83,7 @@ for lpname, lp in client.lending_pools.items():
     rps_usd = sum(
         rps * oracle_prices[asset.index].price / ONE_14_DP
         for asset, rps in pf.state.rewards_per_second.items()
-    )
+    ) if pf.state.duration else 0
     farm_apr = 100 * rps_usd * SECONDS_IN_YEAR / farm_tvl_usd
 
     # lending apr
