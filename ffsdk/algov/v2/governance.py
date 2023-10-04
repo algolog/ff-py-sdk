@@ -259,6 +259,82 @@ def prepareUnmintPremintTransaction(
     return remove_signer_and_group(atc.build_group())
 
 
+def prepareRegisterEscrowOnlineTransaction(
+    distributor: Distributor,
+    senderAddr: str,
+    voteKey: bytes,
+    selectionKey: bytes,
+    stateProofKey: bytes,
+    voteFirstRound: int,
+    voteLastRound: int,
+    voteKeyDilution: int,
+    params: SuggestedParams,
+) -> Transaction:
+    """
+    Returns a transaction to register escrow online.
+
+    @param distributor - distributor that has escrow
+    @param senderAddr - account address for the sender
+    @param voteKey - vote key
+    @param selectionKey - selection key
+    @param stateProofKey - state proof key
+    @param voteFirstRound - vote first round
+    @param voteLastRound - vote last round
+    @param voteKeyDilution - vote key dilution
+    @param params - suggested params for the transactions with the fees overwritten
+    @returns Transaction register online transaction
+    """
+    escrowAddr = getDistributorLogicSig(senderAddr).address()
+
+    atc = AtomicTransactionComposer()
+    atc.add_method_call(
+        sender=senderAddr,
+        signer=signer,
+        app_id=distributor.appId,
+        method=abiDistributor.get_method_by_name("register_online"),
+        method_args=[
+            escrowAddr,
+            encode_address(voteKey),
+            encode_address(selectionKey),
+            stateProofKey,
+            voteFirstRound,
+            voteLastRound,
+            voteKeyDilution,
+        ],
+        sp=sp_fee(params, fee=2000),
+    )
+    txns = remove_signer_and_group(atc.build_group())
+    return txns[0]
+
+
+def prepareRegisterEscrowOfflineTransaction(
+    distributor: Distributor,
+    senderAddr: str,
+    params: SuggestedParams,
+) -> Transaction:
+    """
+    Returns a transaction to register escrow offline.
+
+    @param distributor - distributor that has escrow
+    @param senderAddr - account address for the sender
+    @param params - suggested params for the transactions with the fees overwritten
+    @returns Transaction register offline transaction
+    """
+    escrowAddr = getDistributorLogicSig(senderAddr).address()
+
+    atc = AtomicTransactionComposer()
+    atc.add_method_call(
+        sender=senderAddr,
+        signer=signer,
+        app_id=distributor.appId,
+        method=abiDistributor.get_method_by_name("register_offline"),
+        method_args=[escrowAddr],
+        sp=sp_fee(params, fee=2000),
+    )
+    txns = remove_signer_and_group(atc.build_group())
+    return txns[0]
+
+
 def prepareCommitOrVoteTransaction(
     distributor: Distributor,
     senderAddr: str,

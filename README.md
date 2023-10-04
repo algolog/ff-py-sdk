@@ -123,8 +123,8 @@ Some functions from the [folks-finance-js-sdk](https://github.com/Folks-Finance/
     - [x] `prepareUnmintPremintTransaction`
     - [ ] `prepareUnmintTransactions`
     - [ ] `prepareClaimPremintTransaction`
-    - [ ] `prepareRegisterEscrowOnlineTransaction`
-    - [ ] `prepareRegisterEscrowOfflineTransaction`
+    - [x] `prepareRegisterEscrowOnlineTransaction`
+    - [x] `prepareRegisterEscrowOfflineTransaction`
     - [x] `prepareCommitOrVoteTransaction`
     - [ ] `prepareRemoveLiquidGovernanceEscrowTransactions`
     - [x] `prepareBurnTransactions`
