@@ -3,6 +3,7 @@ from algosdk.v2client.indexer import IndexerClient
 from .config import Network
 from .lending.v2.lending_client import LendingClient
 from .algov.v2.client import AlgoLiquidGovernanceClient
+from .xalgo.client import XAlgoLiquidGovernanceClient
 
 
 class FFClient:
@@ -19,6 +20,9 @@ class FFClient:
 
         # algo liquid governance
         self.algo_liquid_governance = AlgoLiquidGovernanceClient(self)
+
+        # xAlgo liquid governance
+        self.xalgo = XAlgoLiquidGovernanceClient(self)
 
 
 class FFTestnetClient(FFClient):
