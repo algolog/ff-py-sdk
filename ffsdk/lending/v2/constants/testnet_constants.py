@@ -16,6 +16,8 @@ TestnetPools = {
     'loans': {
       147173131: int(0),
       168153622: int(0),
+      397181473: int(1),
+      397181998: int(1),
     },
   },
   'gALGO': {
@@ -40,6 +42,8 @@ TestnetPools = {
     'loans': {
       147173131: int(1),
       147173190: int(0),
+      397181473: int(0),
+      397181998: int(0),
     },
   },
   'USDt': {
@@ -63,6 +67,8 @@ TestnetPools = {
     'poolManagerIndex': 3,
     'loans': {
       147173131: int(3),
+      397181473: int(2),
+      397181998: int(2),
     },
   },
   'goETH': {
@@ -74,6 +80,8 @@ TestnetPools = {
     'poolManagerIndex': 4,
     'loans': {
       147173131: int(4),
+      397181473: int(3),
+      397181998: int(3),
     },
   },
 }
@@ -82,6 +90,8 @@ TestnetLoans = {
   LoanType.GENERAL: 147173131,
   LoanType.STABLECOIN_EFFICIENCY: 147173190,
   LoanType.ALGO_EFFICIENCY: 168153622,
+  LoanType.ULTRASWAP_UP: 397181473,
+  LoanType.ULTRASWAP_DOWN: 397181998,
 }
 
 TESTNET_RESERVE_ADDRESS = "KLF3MEIIHMTA7YHNPLBDVHLN2MVC27X5M7ULTDZLMEX5XO5XCUP7HGBHMQ"
@@ -93,6 +103,6 @@ TestnetOracle = {
 }
 
 TestnetOpUp = {
-  'callerAppId': 118186228,
+  'callerAppId': 397104542,
   'baseAppId': 118186203,
 }

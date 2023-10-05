@@ -295,6 +295,8 @@ class LoanType(Enum):
     GENERAL = 0
     STABLECOIN_EFFICIENCY = 1
     ALGO_EFFICIENCY = 2
+    ULTRASWAP_UP = 3
+    ULTRASWAP_DOWN = 4
 
 
 @dataclass
