@@ -19,6 +19,8 @@ MainnetPools = {
     'loans': {
       971388781: int(0),
       971389489: int(0),
+      1202382736: int(1),
+      1202382829: int(1),
     },
   },
   'gALGO': {
@@ -43,6 +45,8 @@ MainnetPools = {
     'loans': {
       971388781: int(2),
       971388977: int(0),
+      1202382736: int(0),
+      1202382829: int(0),
     },
   },
   'USDt': {
@@ -78,6 +82,8 @@ MainnetPools = {
     'poolManagerIndex': 4,
     'loans': {
       971388781: int(4),
+      1202382736: int(2),
+      1202382829: int(2),
     },
   },
   'goETH': {
@@ -89,6 +95,8 @@ MainnetPools = {
     'poolManagerIndex': 5,
     'loans': {
       971388781: int(5),
+      1202382736: int(3),
+      1202382829: int(3),
     },
   },
   'WBTC': {
@@ -100,6 +108,8 @@ MainnetPools = {
     'poolManagerIndex': 8,
     'loans': {
       971388781: int(8),
+      1202382736: int(4),
+      1202382829: int(4),
     },
   },
   'WETH': {
@@ -111,6 +121,8 @@ MainnetPools = {
     'poolManagerIndex': 9,
     'loans': {
       971388781: int(9),
+      1202382736: int(5),
+      1202382829: int(5),
     },
   },
   'WAVAX': {
@@ -163,6 +175,8 @@ MainnetLoans = {
   LoanType.GENERAL: 971388781,
   LoanType.STABLECOIN_EFFICIENCY: 971388977,
   LoanType.ALGO_EFFICIENCY: 971389489,
+  LoanType.ULTRASWAP_UP: 1202382736,
+  LoanType.ULTRASWAP_DOWN: 1202382829,
 }
 
 # type MainnetLendingPoolKey = "ALGOUSDCPLP" | "ALGOgALGOPLP" | "ALGOGARDPLP" | "ALGOwBTCPLP" | "ALGOwETHPLP" | "ALGOwAVAXPLP" | "ALGOwSOLPLP" | "ALGOwMPLPLP" | "USDCUSDtPLP" | "USDCGARDPLP";
