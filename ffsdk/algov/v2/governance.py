@@ -259,6 +259,86 @@ def prepareUnmintPremintTransaction(
     return remove_signer_and_group(atc.build_group())
 
 
+def prepareUnmintTransactions(
+    dispenser: Dispenser,
+    distributor: Distributor,
+    senderAddr: str,
+    amount: int,
+    params: SuggestedParams,
+    note: bytes | None,
+) -> list[Transaction]:
+    """
+    Returns a transaction to unmint pre-minted gALGO for ALGO at a one-to-one rate.
+    Must be in commitment period. By unminting, you will lose your governance rewards.
+
+    @param dispenser - dispenser to send gALGO to
+    @param distributor - distributor that calls dispenser and to send ALGO to
+    @param senderAddr - account address for the sender
+    @param amount - amount of gALGO to unmint and ALGO to receive
+    @param params - suggested params for the transactions with the fees overwritten
+    @param note - optional note to distinguish who is the unminter (must pass to be eligible for revenue share)
+    @returns Transaction[] unmint transactions
+    """
+    escrowAddr = getDistributorLogicSig(senderAddr).address()
+
+    sendgALGO = transferAlgoOrAsset(
+        dispenser.gAlgoId,
+        senderAddr,
+        get_application_address(dispenser.appId),
+        amount,
+        sp_fee(params, fee=0),
+    )
+
+    atc = AtomicTransactionComposer()
+    atc.add_method_call(
+        sender=senderAddr,
+        signer=signer,
+        app_id=distributor.appId,
+        method=abiDistributor.get_method_by_name("unmint"),
+        method_args=[
+            TransactionWithSigner(sendgALGO, signer),
+            escrowAddr,
+            dispenser.appId,
+        ],
+        sp=sp_fee(params, fee=3000),
+        note=note,
+    )
+    return remove_signer_and_group(atc.build_group())
+
+
+def prepareClaimPremintTransaction(
+    dispenser: Dispenser,
+    distributor: Distributor,
+    senderAddr: str,
+    receiverAddr: str,
+    params: SuggestedParams,
+) -> Transaction:
+    """
+    Returns a transaction to claim pre-minted gALGO.
+    Can be called on behalf of yourself or another user.
+
+    @param dispenser - dispenser to send gALGO to
+    @param distributor - distributor to receive ALGO from
+    @param senderAddr - account address for the sender
+    @param receiverAddr - account address for the pre-minter that will receiver the gALGO
+    @param params - suggested params for the transactions with the fees overwritten
+    @returns Transaction claim pre-mint transaction
+    """
+    escrowAddr = getDistributorLogicSig(receiverAddr).address()
+
+    atc = AtomicTransactionComposer()
+    atc.add_method_call(
+        sender=senderAddr,
+        signer=signer,
+        app_id=distributor.appId,
+        method=abiDistributor.get_method_by_name("claim_premint"),
+        method_args=[escrowAddr, receiverAddr, dispenser.appId, dispenser.gAlgoId],
+        sp=sp_fee(params, fee=4000),
+    )
+    txns = remove_signer_and_group(atc.build_group())
+    return txns[0]
+
+
 def prepareRegisterEscrowOnlineTransaction(
     distributor: Distributor,
     senderAddr: str,
