@@ -7,6 +7,8 @@ from algosdk.transaction import (
     LogicSigAccount,
     SuggestedParams,
     Transaction,
+    OnComplete,
+    ApplicationCloseOutTxn,
 )
 from algosdk.atomic_transaction_composer import (
     AtomicTransactionComposer,
@@ -177,6 +179,43 @@ def getEscrowGovernanceStatus(
         balance=algoBalance,
         isOnline=isOnline,
     )
+
+
+def prepareAddLiquidGovernanceEscrowTransactions(
+    distributor: Distributor,
+    userAddr: str,
+    delegatable: bool,
+    params: SuggestedParams,
+) -> tuple[list[Transaction], LogicSigAccount]:
+    """
+    Returns a group transaction to add liquid governance escrow.
+
+    @param distributor - distributor that adding escrow to
+    @param userAddr - account address for the user
+    @param delegatable - whether governance action for escrow can be delegated to gov admin
+    @param params - suggested params for the transactions with the fees overwritten
+    @returns { txns: Transaction[], escrow: LogicSigAccount } object containing group transaction and generated escrow account
+    """
+    appId = distributor.appId
+    escrow = getDistributorLogicSig(userAddr)
+
+    userCall = addEscrowNoteTransaction(
+        userAddr, escrow.address(), appId, "ga ", sp_fee(params, fee=2000)
+    )
+
+    atc = AtomicTransactionComposer()
+    atc.add_method_call(
+        sender=escrow.address(),
+        signer=signer,
+        app_id=appId,
+        on_complete=OnComplete.OptInOC,
+        method=abiDistributor.get_method_by_name("add_escrow"),
+        method_args=[TransactionWithSigner(userCall, signer), delegatable],
+        rekey_to=get_application_address(appId),
+        sp=sp_fee(params, fee=0),
+    )
+    txns = remove_signer_and_group(atc.build_group())
+    return txns, escrow
 
 
 def prepareMintTransactions(
@@ -445,6 +484,40 @@ def prepareCommitOrVoteTransaction(
     )
     txns = remove_signer_and_group(atc.build_group())
     return txns[0]
+
+
+def prepareRemoveLiquidGovernanceEscrowTransactions(
+    distributor: Distributor,
+    senderAddr: str,
+    ownerAddr: str,
+    params: SuggestedParams,
+) -> list[Transaction]:
+    """
+    Returns a group transaction to remove escrow from distributor.
+    Must have zero balance or be after period end.
+
+    @param distributor - distributor that removing escrow from
+    @param senderAddr - account address for the sender
+    @param ownerAddr - account address for the owner of the escrow
+    @param params - suggested params for the transactions with the fees overwritten
+    @returns Transaction[] burn transactions
+    """
+    escrowAddr = getDistributorLogicSig(ownerAddr).address()
+
+    atc = AtomicTransactionComposer()
+    atc.add_method_call(
+        sender=senderAddr,
+        signer=signer,
+        app_id=distributor.appId,
+        method=abiDistributor.get_method_by_name("remove_escrow"),
+        method_args=[escrowAddr],
+        sp=sp_fee(params, fee=4000),
+    )
+    txns = remove_signer_and_group(atc.build_group())
+    optOutTx = ApplicationCloseOutTxn(
+        escrowAddr, sp_fee(params, fee=0), distributor.appId, rekey_to=escrowAddr
+    )
+    return [txns[0], optOutTx]
 
 
 def prepareBurnTransactions(

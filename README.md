@@ -118,7 +118,7 @@ Some functions from the [folks-finance-js-sdk](https://github.com/Folks-Finance/
  
  * Governance v2
    
-    - [ ] `prepareAddLiquidGovernanceEscrowTransactions`
+    - [x] `prepareAddLiquidGovernanceEscrowTransactions`
     - [x] `prepareMintTransactions`
     - [x] `prepareUnmintPremintTransaction`
     - [x] `prepareUnmintTransactions`
@@ -126,7 +126,7 @@ Some functions from the [folks-finance-js-sdk](https://github.com/Folks-Finance/
     - [x] `prepareRegisterEscrowOnlineTransaction`
     - [x] `prepareRegisterEscrowOfflineTransaction`
     - [x] `prepareCommitOrVoteTransaction`
-    - [ ] `prepareRemoveLiquidGovernanceEscrowTransactions`
+    - [x] `prepareRemoveLiquidGovernanceEscrowTransactions`
     - [x] `prepareBurnTransactions`
 </details>
 
