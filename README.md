@@ -2,13 +2,12 @@
 Some functions from the [folks-finance-js-sdk](https://github.com/Folks-Finance/folks-finance-js-sdk) translated to Python. Unofficial Python SDK for the [Folks Finance](https://folks.finance) v2 lending protocol on the Algorand blockchain.
 
 * Work in progress, use at your own risk.
-* Function names and arguments are preserved from the JS SDK. Camel case and snake case code styles are sometimes mixed.
+* Function names and arguments are preserved from the JS SDK. Camel case and snake case code styles are often mixed.
 
 ## Progress overview
 
-### Lending
 <details>
-<summary>State retrieval functions</summary>
+<summary>Lending v2</summary>
 
 * Deposit
     - [x] `retrievePoolManagerInfo`
@@ -16,11 +15,26 @@ Some functions from the [folks-finance-js-sdk](https://github.com/Folks-Finance/
     - [x] `retrieveUserDepositsInfo`
     - [x] `retrieveUserDepositsFullInfo`
     - [x] `retrieveUserDepositInfo`
+    - [x] `prepareAddDepositEscrowToDeposits`
+    - [x] `prepareOptDepositEscrowIntoAssetInDeposits`
+    - [x] `prepareDepositIntoPool`
+    - [x] `prepareWithdrawFromDepositEscrowInDeposits`
+    - [x] `prepareWithdrawFromPool`
+    - [x] `prepareUpdatePoolInterestIndexes`
+    - [x] `prepareOptOutDepositEscrowFromAssetInDeposits`
+    - [x] `prepareRemoveDepositEscrowFromDeposits`
 
 * DepositStaking
     - [x] `retrieveDepositStakingInfo`
     - [x] `retrieveUserDepositStakingsLocalState`
     - [x] `retrieveUserDepositStakingLocalState`
+    - [x] `prepareAddDepositStakingEscrow`
+    - [x] `prepareOptDepositStakingEscrowIntoAsset`
+    - [x] `prepareSyncStakeInDepositStakingEscrow`
+    - [x] `prepareClaimRewardsOfDepositStakingEscrow`
+    - [x] `prepareWithdrawFromDepositStakingEscrow`
+    - [x] `prepareOptOutDepositStakingEscrowFromAsset`
+    - [x] `prepareRemoveDepositStakingEscrow`
 
 * Loan
     - [x] `retrieveLoanInfo`
@@ -32,50 +46,6 @@ Some functions from the [folks-finance-js-sdk](https://github.com/Folks-Finance/
     - [x] `getMaxReduceCollateralForBorrowUtilisationRatio`
     - [x] `getMaxBorrowForBorrowUtilisationRatio`
     - [x] `getUserLoanAssets` *NEW*
-
-* Oracle
-    - [x] `parseOracleValue`
-    - [ ] `parseLPTokenOracleValue`
-    - [ ] `getTinymanLPPrice`
-    - [ ] `getPactLPPrice`
-    - [x] `getOraclePrices` (partial, without LP tokens)
-
-* Utils
-    - [x] `getEscrows`
-    - [x] `getAppEscrowsWithState` *NEW*
-    - [x] `depositStakingLocalState`
-    - [x] `depositStakingProgramsInfo`
-    - [x] `userDepositStakingInfo`
-    - [x] `loanLocalState`
-    - [x] `userLoanInfo`
-
-* AMM
-    - [x] `retrievePactLendingPoolInfo` (TODO: farming APRs)
-</details>
-
-<details>
-<summary>Transaction preparation functions</summary>
-
-* Deposit
-    - [x] `prepareAddDepositEscrowToDeposits`
-    - [x] `prepareOptDepositEscrowIntoAssetInDeposits`
-    - [x] `prepareDepositIntoPool`
-    - [x] `prepareWithdrawFromDepositEscrowInDeposits`
-    - [x] `prepareWithdrawFromPool`
-    - [x] `prepareUpdatePoolInterestIndexes`
-    - [x] `prepareOptOutDepositEscrowFromAssetInDeposits`
-    - [x] `prepareRemoveDepositEscrowFromDeposits`
-
-* Deposit Staking
-    - [x] `prepareAddDepositStakingEscrow`
-    - [x] `prepareOptDepositStakingEscrowIntoAsset`
-    - [x] `prepareSyncStakeInDepositStakingEscrow`
-    - [x] `prepareClaimRewardsOfDepositStakingEscrow`
-    - [x] `prepareWithdrawFromDepositStakingEscrow`
-    - [x] `prepareOptOutDepositStakingEscrowFromAsset`
-    - [x] `prepareRemoveDepositStakingEscrow`
- 
- * Loan
     - [x] `prepareCreateUserLoan`
     - [x] `prepareAddCollateralToLoan`
     - [x] `prepareSyncCollateralInLoan`
@@ -95,13 +65,29 @@ Some functions from the [folks-finance-js-sdk](https://github.com/Folks-Finance/
     - [ ] `prepareFlashLoanEnd`
     - [ ] `wrapWithFlashLoan`
 
- * Oracle
+* Oracle
+    - [x] `parseOracleValue`
+    - [ ] `parseLPTokenOracleValue`
+    - [ ] `getTinymanLPPrice`
+    - [ ] `getPactLPPrice`
+    - [x] `getOraclePrices` (partial, without LP tokens)
     - [x] `prepareRefreshPricesInOracleAdapter` (partial, without LPPools oracle update)
+
+* Utils
+    - [x] `getEscrows`
+    - [x] `getAppEscrowsWithState` *NEW*
+    - [x] `depositStakingLocalState`
+    - [x] `depositStakingProgramsInfo`
+    - [x] `userDepositStakingInfo`
+    - [x] `loanLocalState`
+    - [x] `userLoanInfo`
+
+* AMM
+    - [x] `retrievePactLendingPoolInfo` (TODO: farming APRs)
 </details>
 
-### Algo liquid governance
 <details>
-<summary>State retrieval functions</summary>
+<summary>Algo liquid governance</summary>
 
  * Common
     - [x] `getDispenserInfo`
@@ -111,13 +97,6 @@ Some functions from the [folks-finance-js-sdk](https://github.com/Folks-Finance/
     - [x] `getDistributorInfo`
     - [x] `getUserLiquidGovernanceInfo`
     - [x] `getEscrowGovernanceStatus`
-</details>
-
-<details>
-<summary>Transaction preparation functions</summary>
- 
- * Governance v2
-   
     - [x] `prepareAddLiquidGovernanceEscrowTransactions`
     - [x] `prepareMintTransactions`
     - [x] `prepareUnmintPremintTransaction`
@@ -128,6 +107,14 @@ Some functions from the [folks-finance-js-sdk](https://github.com/Folks-Finance/
     - [x] `prepareCommitOrVoteTransaction`
     - [x] `prepareRemoveLiquidGovernanceEscrowTransactions`
     - [x] `prepareBurnTransactions`
+</details>
+
+<details>
+<summary>xAlgo liquid governance</summary>
+    
+  - [x] `getXAlgoInfo`
+  - [x] `prepareMintXAlgoTransactions`
+  - [x] `prepareBurnXAlgoTransactions`  
 </details>
 
 ## Installation
