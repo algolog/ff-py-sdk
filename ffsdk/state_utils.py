@@ -196,8 +196,8 @@ def get_accounts_opted_into_app(indexer, app_id, exclude=None):
     :type app_id: int
     :param exclude: comma-delimited list of information to exclude from indexer call
     :type exclude: str, optional
-    :return: formatted global state dict
-    :rtype: dict
+    :return: iterator over accounts
+    :rtype: Iterator[dict]
     """
 
     next_page = ""
