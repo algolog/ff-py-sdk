@@ -30,7 +30,6 @@ from ...state_utils import (
     get_global_state,
     get_local_state_at_app,
     format_state,
-    get_accounts_opted_into_app,
 )
 from .datatypes import (
     LoanInfo,
