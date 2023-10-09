@@ -58,7 +58,7 @@ assert loan.escrowAddress == escrow
 user_address = loan.userAddress
 
 # print report
-print(f"addres: {user_address}")
+print(f"user address: {user_address}")
 user_loan_report(loan, ltype, client.pools)
 
 # configure borrow
