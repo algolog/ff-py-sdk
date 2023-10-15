@@ -12,6 +12,7 @@ readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
     "py-algorand-sdk >= 2.0.0",
+    "requests",
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
