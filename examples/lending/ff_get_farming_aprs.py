@@ -51,6 +51,9 @@ for market_name, pool in client.pools.items():
 
 # Pact farming programs
 for lpname, lp in client.lending_pools.items():
+    if lpname not in MainnetPactLPFarms:
+        continue  # no known farm for this LP
+
     # pact fAssets amm pool
     pp = pact.fetch_pool_by_id(lp.lpPoolAppId)
     # calc total value stored in pact pool
@@ -76,14 +79,14 @@ for lpname, lp in client.lending_pools.items():
     # farm on-chain info
     farm_name = f"{pp.primary_asset.unit_name}/{pp.secondary_asset.unit_name}"
     farm_app_id = MainnetPactLPFarms[lpname]
-    pf = pact.farming.fetch_farm_by_id(farm_app_id)
-    farm_tvl_usd = pp_tvl_usd * pf.state.total_staked / pp.state.total_liquidity
+    farm = pact.farming.fetch_farm_by_id(farm_app_id)
+    farm_tvl_usd = pp_tvl_usd * farm.state.total_staked / pp.state.total_liquidity
 
     # rewards per second in usd terms
     rps_usd = sum(
         rps * oracle_prices[asset.index].price / ONE_14_DP
-        for asset, rps in pf.state.rewards_per_second.items()
-    ) if pf.state.duration else 0
+        for asset, rps in farm.state.rewards_per_second.items()
+    ) if farm.state.duration else 0
     if farm_tvl_usd > 0:
         farm_apr = 100 * rps_usd * SECONDS_IN_YEAR / farm_tvl_usd
     else:
