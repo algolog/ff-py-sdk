@@ -117,6 +117,17 @@ Some functions from the [folks-finance-js-sdk](https://github.com/Folks-Finance/
   - [x] `prepareBurnXAlgoTransactions`  
 </details>
 
+<details>
+<summary>Folks Router</summary>
+
+  - [x] `fetchSwapQuote`
+  - [x] `prepareSwapTransactions`
+  - [x] `getReferrerLogicSig`
+  - [x] `prepareReferrerOptIntoAsset`
+  - [x] `prepareClaimReferrerFees`
+  - [x] `prepareEnableAssetToBeSwapped`
+</details>
+
 ## Installation
 
 `pip install git+https://github.com/algolog/ff-py-sdk`

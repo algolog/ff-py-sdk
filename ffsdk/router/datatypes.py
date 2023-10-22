@@ -5,8 +5,8 @@ from typing import Optional
 
 @dataclass
 class ReferrerTransaction:
-    unsignedTxn: bytes
-    lsig: Optional[bytes] = None
+    unsignedTxn: str  # msgpack encoded, base64 format
+    lsig: Optional[str] = None
 
 
 ReferrerGroupTransaction = list[ReferrerTransaction]
