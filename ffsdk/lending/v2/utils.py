@@ -422,7 +422,7 @@ def userLoanInfo(
 
         isColPresent = poolAppId > 0
         if not isColPresent:
-            break
+            continue
 
         poolInfo = poolManagerPools.get(poolAppId)
         poolLoanInfo = loanPools.get(poolAppId)
@@ -482,7 +482,7 @@ def userLoanInfo(
 
         isBorPresent = oldBorrowBalance > 0
         if not isBorPresent:
-            break
+            continue
 
         poolInfo = poolManagerPools[poolAppId]
         poolLoanInfo = loanPools[poolAppId]
