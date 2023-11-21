@@ -7,7 +7,7 @@ MAINNET_DEPOSITS_APP_ID = 971353536
 
 MAINNET_DEPOSIT_STAKING_APP_ID = 1093729103
 
-# type MainnetPoolKey = "ALGO" | "gALGO" | "USDC" | "USDt" | "GARD" | "goBTC" | "goETH" | "WBTC" | "WETH" | "WAVAX" | "WSOL"| "WLINK"| "OPUL" | "WMPL";
+# type MainnetPoolKey = "ALGO" | "gALGO" | "USDC" | "USDt" | "GARD" | "EURS" | "goBTC" | "goETH" | "WBTC" | "WETH" | "WAVAX" | "WSOL"| "WLINK"| "OPUL" | "WMPL";
 MainnetPools = {
   'ALGO': {
     'appId': 971368268,
@@ -71,6 +71,18 @@ MainnetPools = {
     'loans': {
       971388781: int(7),
       971388977: int(2),
+    },
+  },
+  'EURS': {
+    'appId': 1247053569,
+    'assetId': 227855942,
+    'fAssetId': 1247054501,
+    'frAssetId': 1247054502,
+    'assetDecimals': 6,
+    'poolManagerIndex': 14,
+    'loans': {
+      971388781: int(14),
+      971388977: int(3),
     },
   },
   'goBTC': {
@@ -190,8 +202,18 @@ MainnetLoans = {
   LoanType.ULTRASWAP_DOWN: 1202382829,
 }
 
-# type MainnetLendingPoolKey = "ALGOUSDCPLP" | "ALGOgALGOPLP" | "ALGOwBTCPLP" | "ALGOwETHPLP" | "ALGOwAVAXPLP" | "ALGOwSOLPLP" | "ALGOwLINKPLP" | "ALGOwMPLPLP" | "USDCUSDtPLP";
+# type MainnetLendingPoolKey = "ALGOgALGOPLP" | "ALGOUSDCPLP" | "ALGOEURSPLP" | "ALGOwBTCPLP" | "ALGOwETHPLP" | "ALGOwAVAXPLP" | "ALGOwSOLPLP" | "ALGOwLINKPLP" | "ALGOwMPLPLP" | "USDCUSDtPLP" | "USDCEURSPLP";
 MainnetLendingPools = {
+  'ALGOgALGOPLP': {
+    'provider': LPTokenProvider.PACT,
+    'lpPoolAppId': 1116366345,
+    'lpAssetId': 1116366351,
+    'pool0AppId': 971368268,
+    'pool1AppId': 971370097,
+    'asset0Id': 0,
+    'asset1Id': 793124631,
+    'feeScale': ONE_4_DP,
+  },
   'ALGOUSDCPLP': {
     'provider': LPTokenProvider.PACT,
     'lpPoolAppId': 1116363704,
@@ -202,14 +224,14 @@ MainnetLendingPools = {
     'asset1Id': 31566704,
     'feeScale': ONE_4_DP,
   },
-  'ALGOgALGOPLP': {
+  'ALGOEURSPLP': {
     'provider': LPTokenProvider.PACT,
-    'lpPoolAppId': 1116366345,
-    'lpAssetId': 1116366351,
+    'lpPoolAppId': 1247810099,
+    'lpAssetId': 1247810105,
     'pool0AppId': 971368268,
-    'pool1AppId': 971370097,
+    'pool1AppId': 1247053569,
     'asset0Id': 0,
-    'asset1Id': 793124631,
+    'asset1Id': 227855942,
     'feeScale': ONE_4_DP,
   },
   'ALGOwBTCPLP': {
@@ -282,6 +304,16 @@ MainnetLendingPools = {
     'asset1Id': 312769,
     'feeScale': ONE_4_DP,
   },
+  'USDCEURSPLP': {
+    'provider': LPTokenProvider.PACT,
+    'lpPoolAppId': 1247811167,
+    'lpAssetId': 1247811173,
+    'pool0AppId': 971372237,
+    'pool1AppId': 1247053569,
+    'asset0Id': 31566704,
+    'asset1Id': 227855942,
+    'feeScale': ONE_4_DP,
+  },
 }
 
 MAINNET_RESERVE_ADDRESS = "Q5Q5FC5PTYQIUX5PGNTEW22UJHJHVVUEMMWV2LSG6MGT33YQ54ST7FEIGA"
@@ -308,4 +340,6 @@ MainnetPactLPFarms = {
     'ALGOwSOLPLP': 1177033931,
     'ALGOwMPLPLP': 1180923632,
     'USDCUSDtPLP': 1124035184,
+    'USDCEURSPLP': 1248669934,
+    'ALGOEURSPLP': 1248669985,
 }
