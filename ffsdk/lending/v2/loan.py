@@ -14,10 +14,14 @@ from algosdk.logic import get_application_address
 from algosdk.account import generate_account
 from .utils import getEscrows, loanLocalState, userLoanInfo
 from .mathlib import divScale, mulScale, ONE_4_DP, ONE_10_DP
-from .formulae import calcBorrowUtilisationRatio, calcDepositReturn
+from .formulae import (
+    calcBorrowUtilisationRatio,
+    calcDepositReturn,
+    calcFlashLoanRepayment,
+)
 from .deposit import retrievePoolManagerInfo
 from .oracle import getOraclePrices, prepareRefreshPricesInOracleAdapter
-from .abiContracts import loanABIContract
+from .abiContracts import loanABIContract, poolABIContract
 from ...transaction_utils import (
     signer,
     sp_fee,
@@ -1027,3 +1031,126 @@ def prepareRemoveUserLoan(
         escrowAddr, userAddr, "lr ", sp_fee(params, fee=0)
     )
     return [txns[0], optOutTx, closeToTx]
+
+
+def prepareFlashLoanBegin(
+    pool: Pool,
+    userAddr: str,
+    receiverAddr: str,
+    borrowAmount: int,
+    txnIndexForFlashLoanEnd: int,
+    params: SuggestedParams,
+) -> Transaction:
+    """
+    Returns a transaction to begin flash loan
+    Must be groped together with flash_loan_end call.
+
+    @param pool - pool to borrow from
+    @param userAddr - account address for the user
+    @param receiverAddr - account address to receive the loan
+    @param borrowAmount - the amount of the asset to borrow
+    @param txnIndexForFlashLoanEnd - transaction index in the group transaction for the flash_loan_end call.
+    @param params - suggested params for the transactions with the fees overwritten
+    @returns Transaction flash loan begin transaction
+    """
+    appId = pool.appId
+    assetId = pool.assetId
+
+    atc = AtomicTransactionComposer()
+    atc.add_method_call(
+        sender=userAddr,
+        signer=signer,
+        app_id=appId,
+        method=poolABIContract.get_method_by_name("flash_loan_begin"),
+        method_args=[borrowAmount, txnIndexForFlashLoanEnd, receiverAddr, assetId],
+        sp=sp_fee(params, fee=2000),
+    )
+    txns = remove_signer_and_group(atc.build_group())
+    return txns[0]
+
+
+def prepareFlashLoanEnd(
+    pool: Pool,
+    userAddr: str,
+    reserveAddr: str,
+    repaymentAmount: int,
+    params: SuggestedParams,
+) -> list[Transaction]:
+    """
+    Returns a group transaction to end flash loan.
+    Must be groped together with flash_loan_begin call.
+
+    @param pool - pool borrowed from
+    @param userAddr - account address for the user
+    @param reserveAddr - account address to receive the protocol revenue from the flash loan fee
+    @param repaymentAmount - the amount of the asset to repay (borrow amount plus flash loan fee)
+    @param params - suggested params for the transactions with the fees overwritten
+    @returns Transaction[] flash loan end group transaction
+    """
+    appId = pool.appId
+    assetId = pool.assetId
+
+    sendAsset = transferAlgoOrAsset(
+        assetId,
+        userAddr,
+        get_application_address(appId),
+        repaymentAmount,
+        sp_fee(params, fee=0),
+    )
+
+    atc = AtomicTransactionComposer()
+    atc.add_method_call(
+        sender=userAddr,
+        signer=signer,
+        app_id=appId,
+        method=poolABIContract.get_method_by_name("flash_loan_end"),
+        method_args=[TransactionWithSigner(sendAsset, signer), reserveAddr, assetId],
+        sp=sp_fee(params, fee=3000),
+    )
+    return remove_signer_and_group(atc.build_group())
+
+
+def wrapWithFlashLoan(
+    txns: list[Transaction],
+    pool: Pool,
+    userAddr: str,
+    receiverAddr: str,
+    reserveAddr: str,
+    borrowAmount: int,
+    params: SuggestedParams,
+    flashLoanFee: int = int(0.001e16),
+) -> list[Transaction]:
+    """
+    Wraps given transactions with flash loan.
+
+    @param txns - txns to wrap flash loan around
+    @param pool - pool to borrow from
+    @param userAddr - account address for the user
+    @param receiverAddr - account address to receive the loan
+    @param reserveAddr - account address to receive the protocol revenue from the flash loan fee
+    @param borrowAmount - the amount of the asset to borrow
+    @param params - suggested params for the transactions with the fees overwritten
+    @param flashLoanFee - fee for flash loan as 16 d.p integer (default 0.1%)
+    @returns Transaction[] group transaction wrapped with flash loan
+    """
+    # clear group id in passed txns
+    wrappedTxns = [t for t in txns]
+    for txn in wrappedTxns:
+        txn.group = None
+
+    # add flash loan begin
+    txnIndexForFlashLoanEnd = len(txns) + 2
+    flashLoanBegin = prepareFlashLoanBegin(
+        pool, userAddr, receiverAddr, borrowAmount, txnIndexForFlashLoanEnd, params
+    )
+    wrappedTxns = [flashLoanBegin] + wrappedTxns
+
+    # add flash loan end
+    repaymentAmount = calcFlashLoanRepayment(int(borrowAmount), flashLoanFee)
+    flashLoanEnd = prepareFlashLoanEnd(
+        pool, userAddr, reserveAddr, repaymentAmount, params
+    )
+    wrappedTxns.extend(flashLoanEnd)
+
+    # return txns wrapped with flash loan
+    return wrappedTxns

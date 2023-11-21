@@ -61,9 +61,9 @@ Some functions from the [folks-finance-js-sdk](https://github.com/Folks-Finance/
     - [x] `prepareRebalanceUpLoan`
     - [x] `prepareRebalanceDownLoan`
     - [x] `prepareRemoveUserLoan`
-    - [ ] `prepareFlashLoanBegin`
-    - [ ] `prepareFlashLoanEnd`
-    - [ ] `wrapWithFlashLoan`
+    - [x] `prepareFlashLoanBegin`
+    - [x] `prepareFlashLoanEnd`
+    - [x] `wrapWithFlashLoan`
 
 * Oracle
     - [x] `parseOracleValue`
