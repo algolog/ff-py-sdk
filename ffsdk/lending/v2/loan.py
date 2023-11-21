@@ -927,6 +927,76 @@ def prepareLiquidateLoan(
     return remove_signer_and_group(atc.build_group())
 
 
+def prepareRebalanceUpLoan(
+    loanAppId: int,
+    poolManagerAppId: int,
+    rebalancerAddr: str,
+    escrowAddr: str,
+    pool: Pool,
+    params: SuggestedParams,
+) -> Transaction:
+    """
+    Returns a transaction to rebalance up borrow in a loan escrow.
+
+    @param loanAppId - loan application to rebalance up borrow in
+    @param poolManagerAppId - pool manager application*
+    @param rebalancerAddr - account address for the rebalancer
+    @param escrowAddr - account address for the loan escrow
+    @param pool - pool to rebalance
+    @param params - suggested params for the transactions with the fees overwritten
+    @returns Transaction rebalance up transaction
+    """
+    poolAppId = pool.appId
+    assetId = pool.assetId
+
+    atc = AtomicTransactionComposer()
+    atc.add_method_call(
+        sender=rebalancerAddr,
+        signer=signer,
+        app_id=loanAppId,
+        method=loanABIContract.get_method_by_name("rebalance_up"),
+        method_args=[escrowAddr, assetId, poolAppId, poolManagerAppId],
+        sp=sp_fee(params, fee=5000),
+    )
+    txns = remove_signer_and_group(atc.build_group())
+    return txns[0]
+
+
+def prepareRebalanceDownLoan(
+    loanAppId: int,
+    poolManagerAppId: int,
+    rebalancerAddr: str,
+    escrowAddr: str,
+    pool: Pool,
+    params: SuggestedParams,
+) -> Transaction:
+    """
+    Returns a transaction to rebalance up borrow in a loan escrow.
+
+    @param loanAppId - loan application to rebalance down borrow in
+    @param poolManagerAppId - pool manager application
+    @param rebalancerAddr - account address for the rebalancer
+    @param escrowAddr - account address for the loan escrow
+    @param pool - pool to rebalance
+    @param params - suggested params for the transactions with the fees overwritten
+    @returns Transaction rebalance down transaction
+    """
+    poolAppId = pool.appId
+    assetId = pool.assetId
+
+    atc = AtomicTransactionComposer()
+    atc.add_method_call(
+        sender=rebalancerAddr,
+        signer=signer,
+        app_id=loanAppId,
+        method=loanABIContract.get_method_by_name("rebalance_down"),
+        method_args=[escrowAddr, assetId, poolAppId, poolManagerAppId],
+        sp=sp_fee(params, fee=5000),
+    )
+    txns = remove_signer_and_group(atc.build_group())
+    return txns[0]
+
+
 def prepareRemoveUserLoan(
     loanAppId: int,
     userAddr: str,

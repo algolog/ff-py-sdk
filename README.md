@@ -1,10 +1,10 @@
 # ff-py-sdk
-Some functions from the [folks-finance-js-sdk](https://github.com/Folks-Finance/folks-finance-js-sdk) translated to Python. Unofficial Python SDK for the [Folks Finance](https://folks.finance) v2 lending protocol on the Algorand blockchain.
+Some functions from the [folks-finance-js-sdk](https://github.com/Folks-Finance/folks-finance-js-sdk) and [folks-router-js-sdk](https://github.com/Folks-Finance/folks-router/tree/main/packages/folks-router-js-sdk) translated to Python. Unofficial Python SDK for the [Folks Finance](https://folks.finance) v2 lending protocol on the Algorand blockchain.
 
 * Work in progress, use at your own risk.
 * Function names and arguments are preserved from the JS SDK. Camel case and snake case code styles are often mixed.
 
-## Progress overview
+## Functions overview
 
 <details>
 <summary>Lending v2</summary>
@@ -58,8 +58,8 @@ Some functions from the [folks-finance-js-sdk](https://github.com/Folks-Finance/
     - [x] `prepareRepayLoanWithTxn`
     - [x] `prepareRepayLoanWithCollateral`
     - [x] `prepareLiquidateLoan`
-    - [ ] `prepareRebalanceUpLoan`
-    - [ ] `prepareRebalanceDownLoan`
+    - [x] `prepareRebalanceUpLoan`
+    - [x] `prepareRebalanceDownLoan`
     - [x] `prepareRemoveUserLoan`
     - [ ] `prepareFlashLoanBegin`
     - [ ] `prepareFlashLoanEnd`
