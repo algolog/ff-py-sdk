@@ -18,6 +18,14 @@ class SwapMode(Enum):
 
 
 @dataclass
+class SwapParams:
+    fromAssetId: int
+    toAssetId: int
+    amount: int
+    swapMode: SwapMode
+
+
+@dataclass
 class SwapQuote:
     quoteAmount: int
     priceImpact: float

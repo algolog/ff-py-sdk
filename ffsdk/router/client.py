@@ -1,6 +1,7 @@
 from ffsdk.config import Network
 import requests
-from .datatypes import SwapMode, SwapQuote, SwapTransactions
+from dataclasses import astuple
+from .datatypes import SwapMode, SwapParams, SwapQuote, SwapTransactions
 
 BASE_URL = "https://api.folksrouter.io"
 NETWORK_NAMES = {Network.MAINNET: "mainnet", Network.TESTNET: "testnet"}
@@ -24,14 +25,13 @@ class FolksRouterClient:
 
     def fetchSwapQuote(
         self,
-        fromAssetId: int,
-        toAssetId: int,
-        amount: int,
-        swapMode: SwapMode,
+        params: SwapParams,
         maxGroupSize: int | None = None,
         feeBps: int | None = None,
         referrer: str | None = None,
     ) -> SwapQuote:
+        fromAssetId, toAssetId, amount, swapMode = astuple(params)
+
         r = self.api.get(
             self.url + "/fetch/quote",
             params={
@@ -58,10 +58,14 @@ class FolksRouterClient:
 
     def prepareSwapTransactions(
         self,
+        params: SwapParams,
         userAddress: str,
         slippageBps: int,
         swapQuote: SwapQuote,
     ) -> SwapTransactions:
+        fromAssetId, toAssetId, amount, swapMode = astuple(params)
+
+        # fetch transactions
         r = self.api.get(
             self.url + "/prepare/swap",
             params={
@@ -73,4 +77,8 @@ class FolksRouterClient:
         r.raise_for_status()
         data = r.json()
 
+        # check transactions
+        # TODO
+
+        # return
         return data["result"]
