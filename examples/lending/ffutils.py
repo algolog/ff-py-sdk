@@ -11,7 +11,7 @@ from ffsdk.lending.v2.loan import getUserLoanAssets
 from ffsdk.lending.v2.mathlib import ONE_4_DP, ONE_14_DP
 
 
-def ask_sign_and_send(algod: AlgodClient, txn_group: list[Transaction], sk: str, extra_sign=None):
+def ask_sign_and_send(algod: AlgodClient, txn_group: list[Transaction], sk: str, extra_sign=None, simulate=False):
     """Ask user permission to proceed, sign and send transaction group.
 
     :param algod: Algod client
@@ -19,6 +19,7 @@ def ask_sign_and_send(algod: AlgodClient, txn_group: list[Transaction], sk: str,
     :param sk: secret key for signing transactions
     :param extra_sign: dict[int, str], optional dictionary transaction_number->secret_key for
                        signing some of the transactions with another key(s)
+    :param simulate: bool, simulate transactions instead of sending (default: False)
     """
 
     proceed_ask = input('Proceed (y/N)?: ').lower()
@@ -33,13 +34,19 @@ def ask_sign_and_send(algod: AlgodClient, txn_group: list[Transaction], sk: str,
             for n in extra_sign:
                 signed_txns[n] = signed_txns[n].transaction.sign(extra_sign[n])
 
-        # Send
-        try:
-            txid = algod.send_transactions(signed_txns)
-            wait_for_confirmation(algod, txid)
-            print(f"Txid {txid} confirmed.")
-        except Exception as e:
-            print(e)
+        if simulate:
+            res = algod.simulate_raw_transactions(signed_txns)
+            rg0 = res["txn-groups"][0]
+            print("Failed at:", rg0.get("failed-at"))
+            print("Failure msg:", rg0.get("failure-message"))
+        else:
+            # Send
+            try:
+                txid = algod.send_transactions(signed_txns)
+                wait_for_confirmation(algod, txid)
+                print(f"Txid {txid} confirmed.")
+            except Exception as e:
+                print(e)
 
 
 def user_deposit_report(udfi: UserDepositFullInfo, pools: dict[str, Pool]):
