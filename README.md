@@ -50,8 +50,8 @@ Some functions from the [folks-finance-js-sdk](https://github.com/Folks-Finance/
     - [x] `prepareAddCollateralToLoan`
     - [x] `prepareSyncCollateralInLoan`
     - [x] `prepareReduceCollateralFromLoan`
-    - [ ] `prepareSwapCollateralInLoanBegin`
-    - [ ] `prepareSwapCollateralInLoanEnd`
+    - [x] `prepareSwapCollateralInLoanBegin`
+    - [x] `prepareSwapCollateralInLoanEnd`
     - [x] `prepareRemoveCollateralFromLoan`
     - [x] `prepareBorrowFromLoan`
     - [x] `prepareSwitchBorrowTypeInLoan`

@@ -594,6 +594,109 @@ def prepareReduceCollateralFromLoan(
     return refreshPrices[:-1] + txns
 
 
+def prepareSwapCollateralInLoanBegin(
+    loanAppId: int,
+    poolManagerAppId: int,
+    userAddr: str,
+    escrowAddr: str,
+    receiverAddr: str,
+    pool: Pool,
+    amount: int,
+    isfAssetAmount: bool,
+    txnIndexForSwapCollateralEnd: int,
+    params: SuggestedParams,
+) -> Transaction:
+    """
+    Returns a transaction to begin swap collateral in a loan escrow.
+    Must be groped together with swap_collateral_end call.
+
+    @param loanAppId - loan application to swap collateral in
+    @param poolManagerAppId - pool manager application
+    @param userAddr - account address for the user
+    @param escrowAddr - account address for the loan escrow
+    @param receiverAddr - account address to receive the collateral (typically the user's deposit escrow)
+    @param pool - pool to swap collateral of
+    @param amount - the amount of asset / f asset to reduce the collateral by
+    @param isfAssetAmount - whether the amount of collateral to reduce by is expressed in terms of f asset or asset
+    @param txnIndexForSwapCollateralEnd - transaction index in the group transaction for the swap_collateral_end call.
+    @param params - suggested params for the transactions with the fees overwritten
+    @returns Transaction swap collateral begin transaction
+    """
+    poolAppId = pool.appId
+    assetId = pool.assetId
+    fAssetId = pool.fAssetId
+
+    atc = AtomicTransactionComposer()
+    atc.add_method_call(
+        sender=userAddr,
+        signer=signer,
+        app_id=loanAppId,
+        method=loanABIContract.get_method_by_name("swap_collateral_begin"),
+        method_args=[
+            escrowAddr,
+            receiverAddr,
+            assetId,
+            fAssetId,
+            amount,
+            isfAssetAmount,
+            txnIndexForSwapCollateralEnd,
+            poolAppId,
+            poolManagerAppId,
+        ],
+        sp=sp_fee(params, fee=6000),
+    )
+    txns = remove_signer_and_group(atc.build_group())
+    return txns[0]
+
+
+def prepareSwapCollateralInLoanEnd(
+    loanAppId: int,
+    poolManagerAppId: int,
+    userAddr: str,
+    escrowAddr: str,
+    oracle: Oracle,
+    lpAssets: list[LPToken],
+    baseAssetIds: list[int],
+    params: SuggestedParams,
+) -> list[Transaction]:
+    """
+    Returns a group transaction to end swap collateral in a loan escrow.
+    Must be groped together with swap_collateral_begin call.
+
+    @param loanAppId - loan application to swap collateral in
+    @param poolManagerAppId - pool manager application
+    @param userAddr - account address for the user
+    @param escrowAddr - account address for the loan escrow
+    @param oracle - oracle application to retrieve asset prices from
+    @param lpAssets - list of lp assets in loan
+    @param baseAssetIds - list of base asset ids in loan (non-lp assets)
+    @param params - suggested params for the transactions with the fees overwritten
+    @returns Transaction[] swap collateral end group transaction
+    """
+    oracleAdapterAppId = oracle.oracleAdapterAppId
+
+    refreshPrices = prepareRefreshPricesInOracleAdapter(
+        oracle, userAddr, lpAssets, baseAssetIds, params
+    )
+
+    atc = AtomicTransactionComposer()
+    atc.add_method_call(
+        sender=userAddr,
+        signer=signer,
+        app_id=loanAppId,
+        method=loanABIContract.get_method_by_name("swap_collateral_end"),
+        method_args=[
+            TransactionWithSigner(refreshPrices[-1], signer),
+            escrowAddr,
+            poolManagerAppId,
+            oracleAdapterAppId,
+        ],
+        sp=sp_fee(params, fee=1000),
+    )
+    txns = remove_signer_and_group(atc.build_group())
+    return refreshPrices[:-1] + txns
+
+
 def prepareRemoveCollateralFromLoan(
     loanAppId: int,
     userAddr: str,
