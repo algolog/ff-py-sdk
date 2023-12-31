@@ -12,3 +12,7 @@ govDistributor8 = Distributor(
 govDistributor9 = Distributor(
     appId=1200551652,
 )
+
+govDistributor10 = Distributor(
+    appId=1282254855,
+)
