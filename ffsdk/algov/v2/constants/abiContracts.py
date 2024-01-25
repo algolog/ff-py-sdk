@@ -76,9 +76,7 @@ contract_jscode = """{
     {
       name: "register_offline",
       desc: "",
-      args: [
-        { type: "account", name: "escrow", desc: "" },
-      ],
+      args: [{ type: "account", name: "escrow", desc: "" }],
       returns: { type: "void" },
     },
     {
@@ -94,9 +92,7 @@ contract_jscode = """{
     {
       name: "remove_escrow",
       desc: "",
-      args: [
-        { type: "account", name: "escrow", desc: "" },
-      ],
+      args: [{ type: "account", name: "escrow", desc: "" }],
       returns: { type: "void" },
     },
     {
