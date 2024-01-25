@@ -11,7 +11,7 @@ class LPTokenProvider(Enum):
     PACT = 1
 
 
-@dataclass
+@dataclass(kw_only=True)
 class BaseLPToken:
     provider: LPTokenProvider
     lpAssetId: int
@@ -19,28 +19,47 @@ class BaseLPToken:
     asset1Id: int
 
 
-LPToken = BaseLPToken
+@dataclass(kw_only=True)
+class TinymanLPToken(BaseLPToken):
+    provider: LPTokenProvider = LPTokenProvider.TINYMAN
+    lpPoolAddress: str
 
 
-@dataclass
+@dataclass(kw_only=True)
+class PactLPToken(BaseLPToken):
+    provider: LPTokenProvider = LPTokenProvider.PACT
+    lpPoolAppId: int
+
+
+LPToken = TinymanLPToken | PactLPToken
+
+
+@dataclass(kw_only=True)
 class BaseLendingPool(BaseLPToken):
     pool0AppId: int
     pool1AppId: int
     feeScale: int
 
 
-@dataclass
+@dataclass(kw_only=True)
 class PactLendingPool(BaseLendingPool):
-    provider: LPTokenProvider
+    provider: LPTokenProvider = LPTokenProvider.PACT
     lpPoolAppId: int
 
 
+@dataclass(kw_only=True)
+class TinymanLendingPool(BaseLendingPool):
+    provider: LPTokenProvider = LPTokenProvider.TINYMAN
+    lpPoolAppAddress: int
+
+
+LendingPool = PactLendingPool | TinymanLendingPool
+
+
 @dataclass
-class LendingPoolInfo:
+class BaseLendingPoolInfo:
     fAsset0Supply: int
-    asset0Supply: int
     fAsset1Supply: int
-    asset1Supply: int
     liquidityTokenCirculatingSupply: int
     fee: int
     swapFeeInterestRate: int  # 16 d.p.
@@ -49,7 +68,17 @@ class LendingPoolInfo:
     asset0DepositInterestYield: int  # approximation 16 d.p.
     asset1DepositInterestRate: int  # 16 d.p.
     asset1DepositInterestYield: int  # approximation 16 d.p.
-    tvlUsd: int
+    tvlUsd: float
+
+
+@dataclass
+class PactLendingPoolInfo(BaseLendingPoolInfo):
+    pass
+
+
+@dataclass
+class TinymanLendingPoolInfo(BaseLendingPoolInfo):
+    farmInterestYield: int  # 16 d.p.
 
 
 # DEPOSIT TYPES
@@ -432,7 +461,8 @@ class LendingConfig:
     deposit_staking_app_id: int
     pools: dict[str, Pool]  # market_name -> Pool
     loans: dict[LoanType, int]
-    lending_pools: dict[str, PactLendingPool]
+    pact_lending_pools: dict[str, PactLendingPool]
+    tinyman_lending_pools: dict[str, TinymanLendingPool]
     reserve_address: str
     oracle: Oracle
     opup: OpUp

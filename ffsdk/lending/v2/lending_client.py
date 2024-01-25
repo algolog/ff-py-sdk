@@ -6,8 +6,7 @@ from .lending_config import LENDING_CONFIGS
 
 class LendingClient:
     def __init__(self, ff_client):
-        """Constructor for the client used to interact with FolksFinance lending protocol
-        """
+        """Constructor for the client used to interact with FolksFinance lending protocol"""
         self.ff_client = ff_client
         self.algod = ff_client.algod
         self.indexer = ff_client.indexer
@@ -19,7 +18,12 @@ class LendingClient:
         self.deposit_staking_app_id = self.lending_config.deposit_staking_app_id
         self.pools = self.lending_config.pools
         self.loans = self.lending_config.loans
-        self.lending_pools = self.lending_config.lending_pools
         self.reserve_address = self.lending_config.reserve_address
         self.oracle = self.lending_config.oracle
         self.opup = self.lending_config.opup
+
+        self.pact_lending_pools = self.lending_config.pact_lending_pools
+        self.tinyman_lending_pools = self.lending_config.tinyman_lending_pools
+        self.lending_pools = dict(
+            **self.pact_lending_pools, **self.tinyman_lending_pools
+        )

@@ -1,5 +1,13 @@
 from ffsdk.config import Network
-from .datatypes import LendingConfig, Pool, PactLendingPool, Oracle, OpUp
+from .datatypes import (
+    LendingConfig,
+    Pool,
+    LPTokenProvider,
+    PactLendingPool,
+    TinymanLendingPool,
+    Oracle,
+    OpUp,
+)
 from .constants.mainnet_constants import (
     MAINNET_POOL_MANAGER_APP_ID,
     MAINNET_DEPOSITS_APP_ID,
@@ -29,10 +37,19 @@ LENDING_CONFIGS = {
         MAINNET_DEPOSIT_STAKING_APP_ID,
         {k: Pool(**v) for k, v in MainnetPools.items()},
         MainnetLoans,
-        {k: PactLendingPool(**v) for k, v in MainnetLendingPools.items()},
+        {
+            k: PactLendingPool(**lpdata)
+            for k, lpdata in MainnetLendingPools.items()
+            if lpdata["provider"] == LPTokenProvider.PACT
+        },
+        {
+            k: TinymanLendingPool(**lpdata)
+            for k, lpdata in MainnetLendingPools.items()
+            if lpdata["provider"] == LPTokenProvider.TINYMAN
+        },
         MAINNET_RESERVE_ADDRESS,
         Oracle(**MainnetOracle),
-        OpUp(**MainnetOpUp)
+        OpUp(**MainnetOpUp),
     ),
     Network.TESTNET: LendingConfig(
         TESTNET_POOL_MANAGER_APP_ID,
@@ -40,9 +57,10 @@ LENDING_CONFIGS = {
         None,
         {k: Pool(**v) for k, v in TestnetPools.items()},
         TestnetLoans,
-        None,
+        None,  # pact lending pools
+        None,  # tinyman lending pools
         TESTNET_RESERVE_ADDRESS,
         Oracle(**TestnetOracle),
-        OpUp(**TestnetOpUp)
+        OpUp(**TestnetOpUp),
     ),
 }

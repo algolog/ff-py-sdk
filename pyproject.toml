@@ -9,7 +9,7 @@ authors = [
 ]
 description = "Unofficial Python SDK for the Folks Finance Protocol"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     "py-algorand-sdk >= 2.0.0",
     "requests",
