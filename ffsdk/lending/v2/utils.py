@@ -516,7 +516,7 @@ def userLoanInfo(
             borrowBalance, assetPrice, borrowFactor
         )
 
-        totalBorrowedAmountValue += borrowedAmount
+        totalBorrowedAmountValue += borrowedAmountValue
         totalBorrowBalanceValue += borrowBalanceValue
         totalEffectiveBorrowBalanceValue += effectiveBorrowBalanceValue
         netRate -= borrowBalanceValue * interestRate
