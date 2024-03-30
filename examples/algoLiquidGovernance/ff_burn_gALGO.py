@@ -28,7 +28,9 @@ if distributor_info.dispenserAppId != govDispenser.appId:
 
 dispenser_info = getDispenserInfo(client.indexer, govDispenser)
 if distributor.appId not in dispenser_info.distributorAppIds:
-    raise ValueError(f"Distributor {distributor.appId} is not listed in dispenser")
+    print(
+        f"WARNING: distributor {distributor.appId} is not listed in dispenser {dispenser_info.distributorAppIds}"
+    )
 
 commit_end = datetime.utcfromtimestamp(distributor_info.commitEnd).strftime(
     "%Y-%m-%dT%H:%M:%SZ"
@@ -48,6 +50,7 @@ if burn_amount <= 0 or burn_amount > user_holding:
 
 # show info
 print(f"Dispenser appId: {govDispenser.appId}")
+print(dispenser_info)
 print(f"gALGO assetId: {govDispenser.gAlgoId}")
 print(f"Distributor appId: {distributor.appId}")
 print(f"Distributor commit end: {commit_end}")

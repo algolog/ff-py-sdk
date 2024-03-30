@@ -20,3 +20,6 @@ govDistributor10 = Distributor(
 govDistributor11 = Distributor(
     appId=1702641473,
 )
+
+LAST_DISTRIBUTOR = govDistributor10
+NEXT_DISTRIBUTOR = govDistributor11
