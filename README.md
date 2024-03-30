@@ -1,8 +1,8 @@
 # ff-py-sdk
-Some functions from the [folks-finance-js-sdk](https://github.com/Folks-Finance/folks-finance-js-sdk) and [folks-router-js-sdk](https://github.com/Folks-Finance/folks-router/tree/main/packages/folks-router-js-sdk) translated to Python. Unofficial Python SDK for the [Folks Finance](https://folks.finance) v2 lending protocol on the Algorand blockchain.
+Unofficial Python SDK for the [Folks Finance](https://folks.finance) v2 lending protocol on the Algorand blockchain. Direct translation of most functions from the [folks-finance-js-sdk](https://github.com/Folks-Finance/folks-finance-js-sdk) and [folks-router-js-sdk](https://github.com/Folks-Finance/folks-router/tree/main/packages/folks-router-js-sdk) into Python.
 
-* Work in progress, use at your own risk.
 * Function names and arguments are preserved from the JS SDK. Camel case and snake case code styles are often mixed.
+* `currentRound` field was dropped from the returned data types.
 
 ## Functions overview
 
