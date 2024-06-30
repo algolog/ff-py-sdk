@@ -21,5 +21,9 @@ govDistributor11 = Distributor(
     appId=1702641473,
 )
 
-LAST_DISTRIBUTOR = govDistributor10
-NEXT_DISTRIBUTOR = govDistributor11
+govDistributor12 = Distributor(
+  appId=2057814942,
+)
+
+LAST_DISTRIBUTOR = govDistributor11
+NEXT_DISTRIBUTOR = govDistributor12

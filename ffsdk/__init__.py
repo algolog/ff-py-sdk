@@ -7,4 +7,4 @@ from . import state_utils
 from . import transaction_utils
 
 # metadata
-__version__ = "0.1.3"
+__version__ = "0.1.4"
