@@ -1,4 +1,5 @@
 from base64 import b64decode
+from typing import Optional
 from algosdk.v2client.indexer import IndexerClient
 from algosdk.transaction import (
     SuggestedParams,
@@ -386,6 +387,7 @@ def prepareDepositIntoPool(
     receiverAddr: str,
     assetAmount: int,
     params: SuggestedParams,
+    note: Optional[bytes] = None,
 ) -> list[Transaction]:
     """
     Returns a transaction to deposit asset into given pool.
@@ -396,6 +398,7 @@ def prepareDepositIntoPool(
     @param receiverAddr - account address to receive the deposit (typically the user's deposit escrow or loan escrow)
     @param assetAmount - the asset amount to deposit
     @param params - suggested params for the transactions with the fees overwritten
+    @param note - optional note field to add
     @returns Transaction[] deposit asset group transaction
     """
     appId = pool.appId
@@ -424,6 +427,7 @@ def prepareDepositIntoPool(
             poolManagerAppId,
         ],
         sp=sp_fee(params, fee=4000),
+        note=note,
     )
     return remove_signer_and_group(atc.build_group())
 
