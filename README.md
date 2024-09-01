@@ -110,11 +110,14 @@ Unofficial Python SDK for the [Folks Finance](https://folks.finance) v2 lending 
 </details>
 
 <details>
-<summary>xAlgo liquid governance</summary>
+<summary>xAlgo</summary>
     
-  - [x] `getXAlgoInfo`
-  - [x] `prepareMintXAlgoTransactions`
-  - [x] `prepareBurnXAlgoTransactions`  
+  - [x] `getConsensusState`
+  - [ ] `prepareDummyTransaction`
+  - [ ] `prepareImmediateStakeTransactions`
+  - [ ] `prepareDelayedStakeTransactions`
+  - [ ] `prepareClaimDelayedStakeTransactions`
+  - [ ] `prepareUnstakeTransactions`
 </details>
 
 <details>

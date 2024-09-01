@@ -2,6 +2,7 @@
 # Copyright (c) 2021 Algofi, Inc.
 
 # IMPORTS
+from algosdk.v2client.algod import AlgodClient
 from algosdk.v2client.indexer import IndexerClient
 from base64 import b64decode
 from .config import ALGO_ASSET_ID
@@ -136,12 +137,15 @@ def get_local_state_at_app(
 
 
 def get_global_state(
-    indexer, app_id, decode_byte_values=False, decode_byte_keys=True, block=None
+    client: AlgodClient | IndexerClient,
+    app_id: int,
+    decode_byte_values: bool = False,
+    decode_byte_keys: bool = True,
+    block: int | None = None,
 ):
     """Get global state of a given application.
 
-    :param indexer: algorand indexer
-    :type indexer: :class:`IndexerClient`
+    :param client: Algod or Indexer
     :param app_id: app id
     :type app_id: int
     :param decode_byte_values: whether to base64 decode bytes values
@@ -153,9 +157,12 @@ def get_global_state(
     """
 
     try:
-        application_info = indexer.applications(app_id, round_num=block).get(
-            "application", {}
-        )
+        if isinstance(client, AlgodClient):
+            application_info = client.application_info(app_id)
+        else:
+            application_info = client.applications(app_id, round_num=block).get(
+                "application", {}
+            )
     except:
         raise Exception("Application does not exist.")
     return format_state(
@@ -163,6 +170,12 @@ def get_global_state(
         decode_byte_values=decode_byte_values,
         decode_byte_keys=decode_byte_keys,
     )
+
+
+def get_application_box(
+    client: AlgodClient | IndexerClient, app_id: int, box_name: bytes
+):
+    return client.application_box_by_name(app_id, box_name)
 
 
 def get_balances(indexer, address, block=None):

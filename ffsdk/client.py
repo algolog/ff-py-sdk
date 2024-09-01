@@ -3,7 +3,7 @@ from algosdk.v2client.indexer import IndexerClient
 from .config import Network
 from .lending.v2.lending_client import LendingClient
 from .algov.v2.client import AlgoLiquidGovernanceClient
-from .xalgo.client import XAlgoLiquidGovernanceClient
+from .xAlgo.client import XAlgoLiquidGovernanceClient
 
 
 class FFClient:
