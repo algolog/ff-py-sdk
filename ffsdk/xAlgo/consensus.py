@@ -4,14 +4,27 @@ from algosdk.v2client.models import SimulateRequest
 from algosdk.logic import get_application_address
 from algosdk.encoding import encode_address
 from algosdk.transaction import SuggestedParams, Transaction
+from algosdk.box_reference import BoxReference
 from algosdk.atomic_transaction_composer import (
     AtomicTransactionComposer,
+    TransactionWithSigner,
     EmptySigner,
 )
+from ..transaction_utils import (
+    signer,
+    sp_fee,
+    remove_signer_and_group,
+    transferAlgoOrAsset,
+)
+from ..lending.v2.mathlib import mulScale
 from ..state_utils import get_global_state, get_application_box, parse_uint64s
 from .constants.mainnet_constants import MAINNET_RESERVE_ADDRESS
 from .abiContracts import xAlgoABIContract
 from .datatypes import ConsensusConfig, ConsensusState, ProposerBalance
+from .allocationStrategies.greedy import (
+    greedyStakeAllocationStrategy as defaultStakeAllocationStrategy,
+    greedyUnstakeAllocationStrategy as defaultUnstakeAllocationStrategy,
+)
 
 
 def getConsensusState(
@@ -90,4 +103,197 @@ def getConsensusState(
         totalUnclaimedFees,
         canImmediateStake,
         canDelayStake,
+    )
+
+
+def prepareDummyTransaction(
+    consensusConfig: ConsensusConfig,
+    senderAddr: str,
+    params: SuggestedParams,
+) -> Transaction:
+    atc = AtomicTransactionComposer()
+    atc.add_method_call(
+        sender=senderAddr,
+        signer=signer,
+        app_id=consensusConfig.appId,
+        method=xAlgoABIContract.get_method_by_name("dummy"),
+        method_args=[],
+        sp=sp_fee(params, fee=3000),
+    )
+    txns = remove_signer_and_group(atc.build_group())
+    return txns[0]
+
+
+# assumes txns has either structure:
+# period 1 [appl call, appl call, ...]
+# period 2 [transfer, appl call, transfer, appl call, ...]
+def getTxnsAfterResourceAllocation(
+    consensusConfig: ConsensusConfig,
+    consensusState: ConsensusState,
+    txnsToAllocateTo: list[Transaction],
+    additionalAddresses: list[str],
+    period: int,
+    senderAddr: str,
+    params: SuggestedParams,
+) -> list[Transaction]:
+    appId = consensusConfig.appId
+    xAlgoId = consensusConfig.xAlgoId
+
+    # make copy of txns
+    txns = txnsToAllocateTo.copy()
+
+    if len(txns) % period != 0:
+        raise ValueError(f"Number of txns is not multiple of {period}")
+    availableCalls = len(txns) // period
+
+    # add xALGO asset and proposers box
+    t1 = txns[period - 1]
+    t1.foreign_assets = [xAlgoId]
+    t1.boxes.append((appId, "pr".encode()))
+    t1.boxes = BoxReference.translate_box_references(
+        t1.boxes, t1.foreign_apps, t1.index
+    )
+
+    # get all accounts we need to add
+    accounts: list[str] = additionalAddresses
+    accounts += [proposer.address for proposer in consensusState.proposersBalances]
+
+    # add accounts in groups of 4
+    MAX_FOREIGN_ACCOUNT_PER_TXN = 4
+    for i in range(0, len(accounts), MAX_FOREIGN_ACCOUNT_PER_TXN):
+        # which txn to use
+        callNum = i // MAX_FOREIGN_ACCOUNT_PER_TXN + 1
+
+        # check if we need to add dummy call
+        if callNum <= availableCalls:
+            txnIndex = callNum * period - 1
+        else:
+            txns.insert(0, prepareDummyTransaction(consensusConfig, senderAddr, params))
+            txnIndex = 0
+
+        # add proposer accounts
+        txns[txnIndex].accounts = accounts[i : i + 4]
+
+    return txns
+
+
+def prepareImmediateStakeTransactions(
+    consensusConfig: ConsensusConfig,
+    consensusState: ConsensusState,
+    senderAddr: str,
+    amount: int,
+    minReceivedAmount: int,
+    params: SuggestedParams,
+    proposerAllocationStrategy=defaultStakeAllocationStrategy,
+    note: bytes | None = None,
+) -> list[Transaction]:
+    """
+    Returns a group transaction to stake ALGO and get xALGO immediately.
+
+    @param consensusConfig - consensus application and xALGO config
+    @param consensusState - current state of the consensus application
+    @param senderAddr - account address for the sender
+    @param amount - amount of ALGO to send
+    @param minReceivedAmount - min amount of xALGO expected to receive
+    @param params - suggested params for the transactions with the fees overwritten
+    @param proposerAllocationStrategy - determines which proposers the ALGO sent goes to
+    @param note - optional note to distinguish who is the minter (must pass to be eligible for revenue share)
+    @returns Transaction[] stake transactions
+    """
+    appId = consensusConfig.appId
+
+    atc = AtomicTransactionComposer()
+    proposerAllocations = proposerAllocationStrategy(consensusState, amount)
+
+    for proposerIndex, splitMintAmount in enumerate(proposerAllocations):
+        if splitMintAmount == 0:
+            continue
+
+        # calculate min received amount by proportional of total mint amount
+        splitMinReceivedAmount = mulScale(minReceivedAmount, splitMintAmount, amount)
+
+        # generate txns for single proposer
+        proposerAddress = consensusState.proposersBalances[proposerIndex].address
+        sendAlgo = transferAlgoOrAsset(
+            0, senderAddr, proposerAddress, splitMintAmount, params
+        )
+        atc.add_method_call(
+            sender=senderAddr,
+            signer=signer,
+            app_id=appId,
+            method=xAlgoABIContract.get_method_by_name("immediate_mint"),
+            method_args=[
+                TransactionWithSigner(sendAlgo, signer),
+                proposerIndex,
+                splitMinReceivedAmount,
+            ],
+            sp=sp_fee(params, fee=2000),
+            note=note,
+        )
+
+    # allocate resources, modifies txns in place
+    txns = remove_signer_and_group(atc.build_group())
+    return getTxnsAfterResourceAllocation(
+        consensusConfig, consensusState, txns, [], 2, senderAddr, params
+    )
+
+
+def prepareUnstakeTransactions(
+    consensusConfig: ConsensusConfig,
+    consensusState: ConsensusState,
+    senderAddr: str,
+    amount: int,
+    minReceivedAmount: int,
+    params: SuggestedParams,
+    proposerAllocationStrategy=defaultUnstakeAllocationStrategy,
+    note: bytes | None = None,
+) -> list[Transaction]:
+    """
+    Returns a group transaction to unstake xALGO and get ALGO.
+
+    @param consensusConfig - consensus application and xALGO config
+    @param consensusState - current state of the consensus application
+    @param senderAddr - account address for the sender
+    @param amount - amount of xALGO to send
+    @param minReceivedAmount - min amount of ALGO expected to receive
+    @param params - suggested params for the transactions with the fees overwritten
+    @param proposerAllocationStrategy - determines which proposers the ALGO received comes from
+    @param note - optional note to distinguish who is the burner (must pass to be eligible for revenue share)
+    @returns Transaction[] unstake transactions
+    """
+    appId = consensusConfig.appId
+    xAlgoId = consensusConfig.xAlgoId
+
+    atc = AtomicTransactionComposer()
+    proposerAllocations = proposerAllocationStrategy(consensusState, amount)
+
+    for proposerIndex, splitBurnAmount in enumerate(proposerAllocations):
+        if splitBurnAmount == 0:
+            continue
+
+        # calculate min received amount by proportional of total burn amount
+        splitMinReceivedAmount = mulScale(minReceivedAmount, splitBurnAmount, amount)
+
+        # generate txns for single proposer
+        sendXAlgo = transferAlgoOrAsset(
+            xAlgoId, senderAddr, get_application_address(appId), splitBurnAmount, params
+        )
+        atc.add_method_call(
+            sender=senderAddr,
+            signer=signer,
+            app_id=appId,
+            method=xAlgoABIContract.get_method_by_name("burn"),
+            method_args=[
+                TransactionWithSigner(sendXAlgo, signer),
+                proposerIndex,
+                splitMinReceivedAmount,
+            ],
+            sp=sp_fee(params, fee=2000),
+            note=note,
+        )
+
+    # allocate resources, modifies txns in place
+    txns = remove_signer_and_group(atc.build_group())
+    return getTxnsAfterResourceAllocation(
+        consensusConfig, consensusState, txns, [], 2, senderAddr, params
     )

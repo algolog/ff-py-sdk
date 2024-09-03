@@ -87,7 +87,7 @@ Unofficial Python SDK for the [Folks Finance](https://folks.finance) v2 lending 
 </details>
 
 <details>
-<summary>Algo liquid governance</summary>
+<summary>gAlgo liquid governance</summary>
 
  * Common
     - [x] `getDispenserInfo`
@@ -110,14 +110,14 @@ Unofficial Python SDK for the [Folks Finance](https://folks.finance) v2 lending 
 </details>
 
 <details>
-<summary>xAlgo</summary>
+<summary>xAlgo liquid staking</summary>
     
   - [x] `getConsensusState`
-  - [ ] `prepareDummyTransaction`
-  - [ ] `prepareImmediateStakeTransactions`
+  - [x] `prepareDummyTransaction`
+  - [x] `prepareImmediateStakeTransactions`
   - [ ] `prepareDelayedStakeTransactions`
   - [ ] `prepareClaimDelayedStakeTransactions`
-  - [ ] `prepareUnstakeTransactions`
+  - [x] `prepareUnstakeTransactions`
 </details>
 
 <details>
