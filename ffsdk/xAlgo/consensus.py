@@ -1,8 +1,9 @@
+import secrets
 from base64 import b64encode, b64decode
 from algosdk.v2client.algod import AlgodClient
 from algosdk.v2client.models import SimulateRequest
 from algosdk.logic import get_application_address
-from algosdk.encoding import encode_address
+from algosdk.encoding import encode_address, decode_address
 from algosdk.transaction import SuggestedParams, Transaction
 from algosdk.box_reference import BoxReference
 from algosdk.atomic_transaction_composer import (
@@ -235,6 +236,117 @@ def prepareImmediateStakeTransactions(
     txns = remove_signer_and_group(atc.build_group())
     return getTxnsAfterResourceAllocation(
         consensusConfig, consensusState, txns, [], 2, senderAddr, params
+    )
+
+
+def prepareDelayedStakeTransactions(
+    consensusConfig: ConsensusConfig,
+    consensusState: ConsensusState,
+    senderAddr: str,
+    amount: int,
+    params: SuggestedParams,
+    includeBoxMinBalancePayment: bool = True,
+    proposerAllocationStrategy=defaultStakeAllocationStrategy,
+    note: bytes | None = None,
+) -> list[Transaction]:
+    """
+    Returns a group transaction to stake ALGO and get xALGO after 320 rounds.
+
+    @param consensusConfig - consensus application and xALGO config
+    @param consensusState - current state of the consensus application
+    @param senderAddr - account address for the sender
+    @param amount - amount of ALGO to send
+    @param params - suggested params for the transactions with the fees overwritten
+    @param includeBoxMinBalancePayment - whether to include ALGO payment to app for box min balance
+    @param proposerAllocationStrategy - determines which proposers the ALGO sent goes to
+    @param note - optional note to distinguish who is the minter (must pass to be eligible for revenue share)
+    @returns Transaction[] stake transactions
+    """
+    appId = consensusConfig.appId
+
+    atc = AtomicTransactionComposer()
+    proposerAllocations = proposerAllocationStrategy(consensusState, amount)
+
+    for proposerIndex, splitMintAmount in enumerate(proposerAllocations):
+        if splitMintAmount == 0:
+            continue
+
+        # generate txns for single proposer
+        proposerAddress = consensusState.proposersBalances[proposerIndex].address
+        sendAlgo = transferAlgoOrAsset(
+            0, senderAddr, proposerAddress, splitMintAmount, params
+        )
+        nonce = secrets.token_bytes(2)  # TODO: safeguard against possible clash?
+        boxName = "dm".encode() + decode_address(senderAddr) + nonce
+        atc.add_method_call(
+            sender=senderAddr,
+            signer=signer,
+            app_id=appId,
+            method=xAlgoABIContract.get_method_by_name("delayed_mint"),
+            method_args=[TransactionWithSigner(sendAlgo, signer), proposerIndex, nonce],
+            boxes=[(appId, boxName)],
+            sp=sp_fee(params, fee=2000),
+            note=note,
+        )
+
+    # allocate resources, modifies txns in place
+    txns = remove_signer_and_group(atc.build_group())
+    txns = getTxnsAfterResourceAllocation(
+        consensusConfig, consensusState, txns, [], 2, senderAddr, params
+    )
+
+    # add box min balance payment if specified
+    if includeBoxMinBalancePayment:
+        minBalance = 36100
+        appAddr = get_application_address(appId)
+        txns = [transferAlgoOrAsset(0, senderAddr, appAddr, minBalance, params)] + txns
+
+    return txns
+
+
+def prepareClaimDelayedStakeTransactions(
+    consensusConfig: ConsensusConfig,
+    consensusState: ConsensusState,
+    senderAddr: str,
+    receiverAddr: str,
+    nonce: bytes,
+    params: SuggestedParams,
+) -> list[Transaction]:
+    """
+    Returns a group transaction to claim xALGO from delayed stake after 320 rounds.
+
+    @param consensusConfig - consensus application and xALGO config
+    @param consensusState - current state of the consensus application
+    @param senderAddr - account address for the sender
+    @param receiverAddr - account address for the receiver
+    @param nonce - what was used to generate the delayed mint box
+    @param params - suggested params for the transactions with the fees overwritten
+    @returns Transaction[] stake transactions
+    """
+    appId = consensusConfig.appId
+
+    atc = AtomicTransactionComposer()
+    boxName = "dm".encode() + decode_address(senderAddr) + nonce
+    atc.add_method_call(
+        sender=senderAddr,
+        signer=signer,
+        app_id=appId,
+        method=xAlgoABIContract.get_method_by_name("claim_delayed_mint"),
+        method_args=[receiverAddr, nonce],
+        boxes=[(appId, boxName)],
+        sp=sp_fee(params, fee=3000),
+    )
+
+    # allocate resources, modifies txns in place
+    txns = remove_signer_and_group(atc.build_group())
+    return getTxnsAfterResourceAllocation(
+        consensusConfig,
+        consensusState,
+        txns,
+        [receiverAddr],
+        1,
+        senderAddr,
+        params,
     )
 
 
