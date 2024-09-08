@@ -232,7 +232,7 @@ def prepareImmediateStakeTransactions(
             note=note,
         )
 
-    # allocate resources, modifies txns in place
+    # allocate resources
     txns = remove_signer_and_group(atc.build_group())
     return getTxnsAfterResourceAllocation(
         consensusConfig, consensusState, txns, [], 2, senderAddr, params
@@ -289,7 +289,7 @@ def prepareDelayedStakeTransactions(
             note=note,
         )
 
-    # allocate resources, modifies txns in place
+    # allocate resources
     txns = remove_signer_and_group(atc.build_group())
     txns = getTxnsAfterResourceAllocation(
         consensusConfig, consensusState, txns, [], 2, senderAddr, params
@@ -326,7 +326,7 @@ def prepareClaimDelayedStakeTransactions(
     appId = consensusConfig.appId
 
     atc = AtomicTransactionComposer()
-    boxName = "dm".encode() + decode_address(senderAddr) + nonce
+    boxName = "dm".encode() + decode_address(receiverAddr) + nonce
     atc.add_method_call(
         sender=senderAddr,
         signer=signer,
@@ -337,7 +337,7 @@ def prepareClaimDelayedStakeTransactions(
         sp=sp_fee(params, fee=3000),
     )
 
-    # allocate resources, modifies txns in place
+    # allocate resources
     txns = remove_signer_and_group(atc.build_group())
     return getTxnsAfterResourceAllocation(
         consensusConfig,
@@ -404,7 +404,7 @@ def prepareUnstakeTransactions(
             note=note,
         )
 
-    # allocate resources, modifies txns in place
+    # allocate resources
     txns = remove_signer_and_group(atc.build_group())
     return getTxnsAfterResourceAllocation(
         consensusConfig, consensusState, txns, [], 2, senderAddr, params

@@ -23,7 +23,7 @@ ff_client = FFMainnetClient(algod, indexer)
 client = ff_client.xalgo
 consensus_state = getConsensusState(client.algod, client.consensus_config)
 
-# get user balances and ask unstake amount
+# get user balances and ask stake amount
 DECIMALS = 6
 BALANCE_PAD = 500_000
 sender = USER_ACCOUNT.addr
