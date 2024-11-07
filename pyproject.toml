@@ -27,3 +27,11 @@ repository = "https://github.com/algolog/ff-py-sdk"
 
 [tool.setuptools.dynamic]
 version = {attr = "ffsdk.__version__"}
+
+[tool.setuptools.package-data]
+ffsdk = [
+    "lending/v2/abiContracts/*.json",
+    "router/abiContracts/*.json",
+    "xAlgo/abiContracts/*.json",
+    "oracle/v1/abiContracts/*.json"
+]
