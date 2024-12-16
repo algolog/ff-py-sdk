@@ -4,7 +4,7 @@ TESTNET_POOL_MANAGER_APP_ID = 147157634
 
 TESTNET_DEPOSITS_APP_ID = 147157692
 
-# type TestnetPoolKey = "ALGO" | "gALGO" | "USDC" | "USDt" | "goBTC" | "goETH";
+# type TestnetPoolKey = "ALGO" | "gALGO" | "xALGO" | "USDC" | "USDt" | "goBTC" | "goETH";
 TestnetPools = {
   'ALGO': {
     'appId': 147169673,
@@ -30,6 +30,18 @@ TestnetPools = {
     'loans': {
       147173131: int(5),
       168153622: int(1),
+    },
+  },
+  'xALGO': {
+    'appId': 730786369,
+    'assetId': 730430700,
+    'fAssetId': 730786397,
+    'frAssetId': 730786398,
+    'assetDecimals': 6,
+    'poolManagerIndex': 6,
+    'loans': {
+      147173131: int(6),
+      168153622: int(2),
     },
   },
   'USDC': {
@@ -97,7 +109,7 @@ TestnetLoans = {
 TESTNET_RESERVE_ADDRESS = "KLF3MEIIHMTA7YHNPLBDVHLN2MVC27X5M7ULTDZLMEX5XO5XCUP7HGBHMQ"
 
 TestnetOracle = {
-  'oracle0AppId': 124087437,
+  'oracle0AppId': 159512493,
   'oracleAdapterAppId': 147153711,
   'decimals': 14,
 }
