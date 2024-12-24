@@ -379,7 +379,7 @@ def prepareClaimPremintTransaction(
     return txns[0]
 
 
-def prepareRegisterEscrowOnlineTransaction(
+def prepareRegisterEscrowOnlineTransactions(
     distributor: Distributor,
     senderAddr: str,
     registerFeeAmount: int,
@@ -392,7 +392,7 @@ def prepareRegisterEscrowOnlineTransaction(
     params: SuggestedParams,
 ) -> list[Transaction]:
     """
-    Returns a transaction to register escrow online.
+    Returns a group transaction to register an escrow online.
 
     @param distributor - distributor that has escrow
     @param senderAddr - account address for the sender
@@ -443,7 +443,7 @@ def prepareRegisterEscrowOfflineTransaction(
     params: SuggestedParams,
 ) -> Transaction:
     """
-    Returns a transaction to register escrow offline.
+    Returns a transaction to register an escrow offline.
 
     @param distributor - distributor that has escrow
     @param senderAddr - account address for the sender

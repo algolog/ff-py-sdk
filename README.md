@@ -102,7 +102,7 @@ Unofficial Python SDK for the [Folks Finance](https://folks.finance) v2 lending 
     - [x] `prepareUnmintPremintTransaction`
     - [x] `prepareUnmintTransactions`
     - [x] `prepareClaimPremintTransaction`
-    - [x] `prepareRegisterEscrowOnlineTransaction`
+    - [x] `prepareRegisterEscrowOnlineTransactions`
     - [x] `prepareRegisterEscrowOfflineTransaction`
     - [x] `prepareCommitOrVoteTransaction`
     - [x] `prepareRemoveLiquidGovernanceEscrowTransactions`
