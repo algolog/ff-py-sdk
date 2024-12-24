@@ -15,6 +15,7 @@ from algosdk.atomic_transaction_composer import (
     TransactionWithSigner,
 )
 from algosdk.logic import get_application_address
+from .constants import PAYOUTS_GO_ONLINE_FEE
 from .constants.abiContracts import abiDistributor
 from ...state_utils import get_global_state, get_local_state_at_app
 from ...transaction_utils import (
@@ -381,6 +382,7 @@ def prepareClaimPremintTransaction(
 def prepareRegisterEscrowOnlineTransaction(
     distributor: Distributor,
     senderAddr: str,
+    registerFeeAmount: int,
     voteKey: bytes,
     selectionKey: bytes,
     stateProofKey: bytes,
@@ -388,12 +390,13 @@ def prepareRegisterEscrowOnlineTransaction(
     voteLastRound: int,
     voteKeyDilution: int,
     params: SuggestedParams,
-) -> Transaction:
+) -> list[Transaction]:
     """
     Returns a transaction to register escrow online.
 
     @param distributor - distributor that has escrow
     @param senderAddr - account address for the sender
+    @param registerFeeAmount - the register online transaction fee (to be used for consensus rewards)
     @param voteKey - vote key
     @param selectionKey - selection key
     @param stateProofKey - state proof key
@@ -405,6 +408,14 @@ def prepareRegisterEscrowOnlineTransaction(
     """
     escrowAddr = getDistributorLogicSig(senderAddr).address()
 
+    # check register fee is either 0 ALGO or 0.2 ALGO
+    if registerFeeAmount != 0 and registerFeeAmount != PAYOUTS_GO_ONLINE_FEE:
+        raise ValueError("Unexpected register fee amount")
+
+    sendAlgo = transferAlgoOrAsset(
+        0, senderAddr, escrowAddr, registerFeeAmount, sp_fee(params, 0)
+    )
+
     atc = AtomicTransactionComposer()
     atc.add_method_call(
         sender=senderAddr,
@@ -412,6 +423,7 @@ def prepareRegisterEscrowOnlineTransaction(
         app_id=distributor.appId,
         method=abiDistributor.get_method_by_name("register_online"),
         method_args=[
+            TransactionWithSigner(sendAlgo, signer),
             escrowAddr,
             encode_address(voteKey),
             encode_address(selectionKey),
@@ -420,10 +432,9 @@ def prepareRegisterEscrowOnlineTransaction(
             voteLastRound,
             voteKeyDilution,
         ],
-        sp=sp_fee(params, fee=2000),
+        sp=sp_fee(params, fee=3000),
     )
-    txns = remove_signer_and_group(atc.build_group())
-    return txns[0]
+    return remove_signer_and_group(atc.build_group())
 
 
 def prepareRegisterEscrowOfflineTransaction(
@@ -511,7 +522,8 @@ def prepareRemoveLiquidGovernanceEscrowTransactions(
         app_id=distributor.appId,
         method=abiDistributor.get_method_by_name("remove_escrow"),
         method_args=[escrowAddr],
-        sp=sp_fee(params, fee=4000),
+        accounts=[ownerAddr],
+        sp=sp_fee(params, fee=5000),
     )
     txns = remove_signer_and_group(atc.build_group())
     optOutTx = ApplicationCloseOutTxn(

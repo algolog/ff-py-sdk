@@ -63,6 +63,7 @@ contract_jscode = """{
       name: "register_online",
       desc: "",
       args: [
+        { type: "pay", name: "send_algo", desc: "" },
         { type: "account", name: "escrow", desc: "" },
         { type: "address", name: "vote_key", desc: "" },
         { type: "address", name: "sel_key", desc: "" },

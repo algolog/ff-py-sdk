@@ -1,6 +1,8 @@
 from ...common.datatypes import Distributor
 
 
+PAYOUTS_GO_ONLINE_FEE = 2_000_000
+
 govDistributor7 = Distributor(
     appId=1073098885,
 )
