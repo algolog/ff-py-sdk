@@ -3,8 +3,8 @@ from algosdk.v2client.algod import AlgodClient
 from algosdk.transaction import assign_group_id
 from ffsdk.state_utils import AlgodIndexerCombo
 from ffsdk.lending.v2.datatypes import Account
-from ffsdk.algov.common import govDispenser, getDispenserInfo
-from ffsdk.algov.v2.governance import getDistributorInfo, prepareBurnTransactions
+from ffsdk.algo_liquid_governance.common import govDispenser, getDispenserInfo
+from ffsdk.algo_liquid_governance.v2.governance import getDistributorInfo, prepareBurnTransactions
 from ffsdk.state_utils import get_balances
 from ffutils import ask_sign_and_send
 from datetime import datetime
