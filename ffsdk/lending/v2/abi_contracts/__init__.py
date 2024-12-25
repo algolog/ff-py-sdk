@@ -13,6 +13,6 @@ def load_contract(fname_json: str) -> Contract:
 depositsABIContract = load_contract("deposits.json")
 depositStakingABIContract = load_contract("deposit_staking.json")
 loanABIContract = load_contract("loan.json")
-lpTokenOracleABIContract = load_contract("lpTokenOracle.json")
-oracleAdapterABIContract = load_contract("oracleAdapter.json")
+lpTokenOracleABIContract = load_contract("lp_token_oracle.json")
+oracleAdapterABIContract = load_contract("oracle_adapter.json")
 poolABIContract = load_contract("pool.json")

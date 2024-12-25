@@ -2,7 +2,7 @@ from ffsdk.client import FFMainnetClient
 from algosdk.v2client.algod import AlgodClient
 from ffsdk.state_utils import AlgodIndexerCombo
 from ffsdk.lending.v2.deposit import retrievePoolManagerInfo
-from ffsdk.lending.v2.depositStaking import (
+from ffsdk.lending.v2.deposit_staking import (
     retrieveDepositStakingInfo,
     retrieveUserDepositStakingsLocalState,
 )

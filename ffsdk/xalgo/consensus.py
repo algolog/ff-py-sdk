@@ -22,7 +22,7 @@ from ..state_utils import get_global_state, get_application_box, parse_uint64s
 from .constants.mainnet_constants import MAINNET_RESERVE_ADDRESS
 from .abi_contracts import xAlgoABIContract
 from .datatypes import ConsensusConfig, ConsensusState, ProposerBalance
-from .allocationStrategies.greedy import (
+from .allocation_strategies.greedy import (
     greedyStakeAllocationStrategy as defaultStakeAllocationStrategy,
     greedyUnstakeAllocationStrategy as defaultUnstakeAllocationStrategy,
 )

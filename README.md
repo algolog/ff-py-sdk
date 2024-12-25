@@ -139,7 +139,7 @@ Unofficial Python SDK for the [Folks Finance](https://folks.finance) v2 lending 
 ```python
 from ffsdk.client import FFMainnetClient
 from ffsdk.lending.v2.deposit import retrievePoolManagerInfo, retrievePoolInfo
-from ffsdk.lending.v2.depositStaking import retrieveDepositStakingInfo
+from ffsdk.lending.v2.deposit_staking import retrieveDepositStakingInfo
 from ffsdk.lending.v2.utils import depositStakingProgramsInfo
 from ffsdk.lending.v2.oracle import getOraclePrices
 from ffsdk.lending.v2.mathlib import ONE_14_DP

@@ -7,7 +7,7 @@ from ffsdk.lending.v2.deposit import (
     retrievePoolManagerInfo,
     prepareDepositIntoPool,
 )
-from ffsdk.lending.v2.depositStaking import (
+from ffsdk.lending.v2.deposit_staking import (
     retrieveDepositStakingInfo,
     retrieveUserDepositStakingLocalState,
     prepareSyncStakeInDepositStakingEscrow,

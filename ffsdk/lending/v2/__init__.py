@@ -4,7 +4,7 @@ from . import amm
 from . import constants
 from . import datatypes
 from . import deposit
-from . import depositStaking
+from . import deposit_staking
 from . import formulae
 from . import loan
 from . import lending_client

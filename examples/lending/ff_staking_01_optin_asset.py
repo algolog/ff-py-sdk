@@ -4,7 +4,7 @@ from algosdk.transaction import assign_group_id
 from ffsdk.state_utils import AlgodIndexerCombo
 from ffsdk.lending.v2.datatypes import Account
 from ffsdk.lending.v2.deposit import retrievePoolManagerInfo
-from ffsdk.lending.v2.depositStaking import (
+from ffsdk.lending.v2.deposit_staking import (
     retrieveDepositStakingInfo,
     retrieveUserDepositStakingLocalState,
     prepareOptDepositStakingEscrowIntoAsset,
