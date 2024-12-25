@@ -20,7 +20,7 @@ from ..transaction_utils import (
 from ..lending.v2.mathlib import mulScale
 from ..state_utils import get_global_state, get_application_box, parse_uint64s
 from .constants.mainnet_constants import MAINNET_RESERVE_ADDRESS
-from .abiContracts import xAlgoABIContract
+from .abi_contracts import xAlgoABIContract
 from .datatypes import ConsensusConfig, ConsensusState, ProposerBalance
 from .allocationStrategies.greedy import (
     greedyStakeAllocationStrategy as defaultStakeAllocationStrategy,

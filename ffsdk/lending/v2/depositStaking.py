@@ -29,7 +29,7 @@ from ...transaction_utils import (
     addEscrowNoteTransaction,
     removeEscrowNoteTransaction,
 )
-from .abiContracts import depositStakingABIContract
+from .abi_contracts import depositStakingABIContract
 from ...state_utils import get_global_state, get_balances, get_local_state_at_app
 
 

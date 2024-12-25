@@ -16,7 +16,7 @@ from algosdk.atomic_transaction_composer import (
 )
 from algosdk.logic import get_application_address
 from .constants import PAYOUTS_GO_ONLINE_FEE
-from .constants.abiContracts import abiDistributor
+from .constants.abi_contracts import abiDistributor
 from ...state_utils import get_global_state, get_local_state_at_app
 from ...transaction_utils import (
     signer,

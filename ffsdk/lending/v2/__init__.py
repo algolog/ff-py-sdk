@@ -1,5 +1,5 @@
 # imports
-from . import abiContracts
+from . import abi_contracts
 from . import amm
 from . import constants
 from . import datatypes
