@@ -10,4 +10,4 @@ def load_contract(fname_json: str) -> Contract:
     return contract
 
 
-xAlgoABIContract = load_contract("xAlgo.json")
+xAlgoABIContract = load_contract("xalgo.json")

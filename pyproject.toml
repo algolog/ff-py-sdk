@@ -32,6 +32,6 @@ version = {attr = "ffsdk.__version__"}
 ffsdk = [
     "lending/v2/abiContracts/*.json",
     "router/abiContracts/*.json",
-    "xAlgo/abiContracts/*.json",
+    "xalgo/abiContracts/*.json",
     "oracle/v1/abiContracts/*.json"
 ]

@@ -3,11 +3,11 @@ from algosdk.v2client.algod import AlgodClient
 from algosdk.transaction import assign_group_id
 from ffsdk.state_utils import AlgodIndexerCombo, get_balances
 from ffsdk.lending.v2.datatypes import Account
-from ffsdk.xAlgo.consensus import (
+from ffsdk.xalgo.consensus import (
     getConsensusState,
     prepareUnstakeTransactions,
 )
-from ffsdk.xAlgo.formulae import convertXAlgoToAlgo
+from ffsdk.xalgo.formulae import convertXAlgoToAlgo
 from ffutils import ask_sign_and_send
 from decimal import Decimal
 
@@ -27,7 +27,7 @@ consensus_state = getConsensusState(client.algod, client.consensus_config)
 DECIMALS = 6
 sender = USER_ACCOUNT.addr
 account_info = client.algod.account_info(sender)
-user_balances = {asset['asset-id']: asset['amount'] for asset in account_info['assets']}
+user_balances = {asset["asset-id"]: asset["amount"] for asset in account_info["assets"]}
 
 user_holding = user_balances[client.consensus_config.xAlgoId]
 user_holding_unscaled = Decimal(user_holding) / 10**DECIMALS
@@ -46,13 +46,13 @@ print(f"calculated ALGO return: {min_to_receive/10**DECIMALS}")
 # prepare unstake transactions
 params = client.algod.suggested_params()
 txns = prepareUnstakeTransactions(
-        client.consensus_config,
-        consensus_state,
-        sender,
-        burn_amount,
-        min_to_receive,
-        params,
-        note=None,
+    client.consensus_config,
+    consensus_state,
+    sender,
+    burn_amount,
+    min_to_receive,
+    params,
+    note=None,
 )
 
 txn_group = assign_group_id(txns)

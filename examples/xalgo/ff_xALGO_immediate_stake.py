@@ -3,11 +3,11 @@ from algosdk.v2client.algod import AlgodClient
 from algosdk.transaction import assign_group_id
 from ffsdk.state_utils import AlgodIndexerCombo, get_balances
 from ffsdk.lending.v2.datatypes import Account
-from ffsdk.xAlgo.consensus import (
+from ffsdk.xalgo.consensus import (
     getConsensusState,
     prepareImmediateStakeTransactions,
 )
-from ffsdk.xAlgo.formulae import convertAlgoToXAlgoWhenImmediate
+from ffsdk.xalgo.formulae import convertAlgoToXAlgoWhenImmediate
 from ffutils import ask_sign_and_send
 from decimal import Decimal
 
@@ -29,9 +29,9 @@ BALANCE_PAD = 500_000
 sender = USER_ACCOUNT.addr
 account_info = client.algod.account_info(sender)
 
-user_balance = account_info['amount']
+user_balance = account_info["amount"]
 print(f"User ALGO balance: {user_balance / 10**DECIMALS}")
-max_stake = max(0, user_balance - account_info['min-balance'] - BALANCE_PAD)
+max_stake = max(0, user_balance - account_info["min-balance"] - BALANCE_PAD)
 max_stake_unscaled = Decimal(max_stake) / 10**DECIMALS
 
 amount_ask = input(f"Amount of ALGO to stake [{max_stake_unscaled}]: ").strip()
@@ -39,7 +39,9 @@ stake_amount_unscaled = Decimal(amount_ask) if amount_ask else max_stake_unscale
 stake_amount = int(stake_amount_unscaled * 10**DECIMALS)
 assert stake_amount > 0
 calculated_return = convertAlgoToXAlgoWhenImmediate(stake_amount, consensus_state)
-min_to_receive = calculated_return * 9999 // 10000  # asking 0.01% less to prevent txn failure
+min_to_receive = (
+    calculated_return * 9999 // 10000
+)  # asking 0.01% less to prevent txn failure
 
 print("Preparing stake txns...")
 print(f"sender: {sender}")
@@ -50,13 +52,13 @@ print(f"minimal xALGO amount: {min_to_receive:_}")
 # prepare stake transactions
 params = client.algod.suggested_params()
 txns = prepareImmediateStakeTransactions(
-        client.consensus_config,
-        consensus_state,
-        sender,
-        stake_amount,
-        min_to_receive,
-        params,
-        note=None,
+    client.consensus_config,
+    consensus_state,
+    sender,
+    stake_amount,
+    min_to_receive,
+    params,
+    note=None,
 )
 
 txn_group = assign_group_id(txns)

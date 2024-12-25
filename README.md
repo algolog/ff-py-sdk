@@ -110,7 +110,7 @@ Unofficial Python SDK for the [Folks Finance](https://folks.finance) v2 lending 
 </details>
 
 <details>
-<summary>xAlgo liquid staking</summary>
+<summary>xALGO liquid staking</summary>
     
   - [x] `getConsensusState`
   - [x] `prepareDummyTransaction`

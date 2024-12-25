@@ -3,9 +3,9 @@ from .constants.mainnet_constants import consensusConfig
 from .datatypes import ConsensusConfig
 
 
-class XAlgoLiquidGovernanceClient:
+class XAlgoLiquidStakingClient:
     def __init__(self, ff_client):
-        """Constructor for the client for interaction with FolksFinance xAlgo liquid governance protocol"""
+        """Constructor for the client for interaction with FolksFinance xALGO liquid staking protocol"""
         self.ff_client = ff_client
         self.algod = ff_client.algod
         self.indexer = ff_client.indexer
