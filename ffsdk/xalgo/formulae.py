@@ -1,4 +1,4 @@
-from ..lending.v2.mathlib import mulScale, ONE_16_DP
+from ..mathlib import mulScale, ONE_16_DP
 from .datatypes import ConsensusState
 
 

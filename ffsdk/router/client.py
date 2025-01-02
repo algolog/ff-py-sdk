@@ -9,7 +9,7 @@ from .datatypes import SwapMode, SwapParams, SwapQuote, SwapTransactions
 from .abi_contracts import routerABIContract
 from .constants.mainnet_constants import MAINNET_FOLKS_ROUTER_APP_ID
 from .constants.testnet_constants import TESTNET_FOLKS_ROUTER_APP_ID
-from ..lending.v2.mathlib import mulScale, ONE_4_DP
+from ..mathlib import mulScale, ONE_4_DP
 import requests
 
 BASE_URL = "https://api.folksrouter.io"

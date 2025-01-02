@@ -13,7 +13,7 @@ from algosdk.atomic_transaction_composer import (
 from algosdk.logic import get_application_address
 from algosdk.account import generate_account
 from .utils import getEscrows, loanLocalState, userLoanInfo
-from .mathlib import divScale, mulScale, ONE_4_DP, ONE_10_DP
+from ...mathlib import divScale, mulScale, ONE_4_DP, ONE_10_DP
 from .formulae import (
     calcBorrowUtilisationRatio,
     calcDepositReturn,

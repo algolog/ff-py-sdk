@@ -8,7 +8,7 @@ from ffsdk.lending.v2.datatypes import (
     UserLoanInfo,
 )
 from ffsdk.lending.v2.loan import getUserLoanAssets
-from ffsdk.lending.v2.mathlib import ONE_4_DP, ONE_14_DP
+from ffsdk.mathlib import ONE_4_DP, ONE_14_DP
 
 
 def ask_sign_and_send(algod: AlgodClient, txn_group: list[Transaction], sk: str, extra_sign=None, simulate=False):

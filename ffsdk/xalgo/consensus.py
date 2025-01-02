@@ -17,7 +17,7 @@ from ..transaction_utils import (
     remove_signer_and_group,
     transferAlgoOrAsset,
 )
-from ..lending.v2.mathlib import mulScale
+from ..mathlib import mulScale
 from ..state_utils import get_global_state, get_application_box, parse_uint64s
 from .constants.mainnet_constants import MAINNET_RESERVE_ADDRESS
 from .abi_contracts import xAlgoABIContract

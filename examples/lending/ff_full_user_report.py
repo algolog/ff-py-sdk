@@ -20,7 +20,7 @@ from ffsdk.lending.v2.utils import (
     userDepositStakingInfo,
 )
 from ffsdk.lending.v2.oracle import getOraclePrices
-from ffsdk.lending.v2.mathlib import ONE_4_DP, ONE_14_DP
+from ffsdk.mathlib import ONE_4_DP, ONE_14_DP
 from ffutils import user_deposit_report, user_staking_report, user_loan_report
 import argparse
 

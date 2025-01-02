@@ -5,9 +5,9 @@ from ffsdk.lending.v2.constants.mainnet_constants import MainnetPactLPFarms
 from ffsdk.lending.v2.deposit import retrievePoolManagerInfo, retrievePoolInfo
 from ffsdk.lending.v2.deposit_staking import retrieveDepositStakingInfo
 from ffsdk.lending.v2.formulae import calcWithdrawReturn
-from ffsdk.lending.v2.mathlib import ONE_14_DP, SECONDS_IN_YEAR
 from ffsdk.lending.v2.utils import depositStakingProgramsInfo
 from ffsdk.lending.v2.oracle import getOraclePrices
+from ffsdk.mathlib import ONE_14_DP, SECONDS_IN_YEAR
 import pactsdk
 
 ONE_6_DP = 1e6

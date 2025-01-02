@@ -1,5 +1,5 @@
 from time import time
-from .mathlib import (
+from ...mathlib import (
     divScale,
     divScaleRoundUp,
     expBySquaring,

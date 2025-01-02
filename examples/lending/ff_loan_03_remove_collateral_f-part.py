@@ -15,7 +15,7 @@ from ffsdk.lending.v2.utils import userLoanInfo
 from ffsdk.lending.v2.formulae import calcWithdrawReturn
 from ffsdk.lending.v2.oracle import getOraclePrices
 from ffsdk.lending.v2.opup import prefixWithOpUp
-from ffsdk.lending.v2.mathlib import ONE_4_DP
+from ffsdk.mathlib import ONE_4_DP
 from ffsdk.state_utils import get_balances
 from ffutils import user_loan_report, ask_sign_and_send
 from decimal import Decimal

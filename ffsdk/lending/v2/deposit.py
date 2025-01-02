@@ -13,7 +13,7 @@ from algosdk.atomic_transaction_composer import (
     AtomicTransactionComposer,
     TransactionWithSigner,
 )
-from .mathlib import (
+from ...mathlib import (
     ONE_16_DP,
     ONE_10_DP,
     UINT64,

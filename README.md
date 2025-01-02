@@ -142,7 +142,7 @@ from ffsdk.lending.v2.deposit import retrievePoolManagerInfo, retrievePoolInfo
 from ffsdk.lending.v2.deposit_staking import retrieveDepositStakingInfo
 from ffsdk.lending.v2.utils import depositStakingProgramsInfo
 from ffsdk.lending.v2.oracle import getOraclePrices
-from ffsdk.lending.v2.mathlib import ONE_14_DP
+from ffsdk.mathlib import ONE_14_DP
 
 
 client = FFMainnetClient().lending
