@@ -115,9 +115,13 @@ Unofficial Python SDK for the [Folks Finance](https://folks.finance) v2 lending 
   - [x] `getConsensusState`
   - [x] `prepareDummyTransaction`
   - [x] `prepareImmediateStakeTransactions`
+  - [x] `prepareImmediateStakeAndDepositTransactions`
   - [x] `prepareDelayedStakeTransactions`
   - [x] `prepareClaimDelayedStakeTransactions`
   - [x] `prepareUnstakeTransactions`
+  - [ ] `prepareSetProposerAdminTransaction`
+  - [ ] `prepareRegisterProposerOnlineTransactions`
+  - [ ] `prepareRegisterProposerOfflineTransaction`
 </details>
 
 <details>

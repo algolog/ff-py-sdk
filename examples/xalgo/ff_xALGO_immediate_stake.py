@@ -3,6 +3,7 @@ from algosdk.v2client.algod import AlgodClient
 from algosdk.transaction import assign_group_id
 from ffsdk.state_utils import AlgodIndexerCombo, get_balances
 from ffsdk.lending.v2.datatypes import Account
+from ffsdk.lending.v2.opup import prefixWithOpUp
 from ffsdk.xalgo.consensus import (
     getConsensusState,
     prepareImmediateStakeTransactions,
@@ -42,9 +43,11 @@ calculated_return = convertAlgoToXAlgoWhenImmediate(stake_amount, consensus_stat
 min_to_receive = (
     calculated_return * 9999 // 10000
 )  # asking 0.01% less to prevent txn failure
+receiver = sender
 
 print("Preparing stake txns...")
 print(f"sender: {sender}")
+print(f"receiver: {receiver}")
 print(f"amount of ALGO to stake: {stake_amount:_}")
 print(f"calculated xALGO return: {calculated_return:_}")
 print(f"minimal xALGO amount: {min_to_receive:_}")
@@ -55,11 +58,16 @@ txns = prepareImmediateStakeTransactions(
     client.consensus_config,
     consensus_state,
     sender,
+    receiver,
     stake_amount,
     min_to_receive,
     params,
     note=None,
 )
+
+opup_budget = 1
+print(f"opup budget: {opup_budget}")
+txns = prefixWithOpUp(ff_client.lending.opup, sender, txns, opup_budget, params)
 
 txn_group = assign_group_id(txns)
 ask_sign_and_send(algod, txn_group, USER_ACCOUNT.sk, simulate=True)

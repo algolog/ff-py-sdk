@@ -3,6 +3,7 @@ from algosdk.v2client.algod import AlgodClient
 from algosdk.transaction import assign_group_id
 from ffsdk.state_utils import AlgodIndexerCombo, get_balances
 from ffsdk.lending.v2.datatypes import Account
+from ffsdk.lending.v2.opup import prefixWithOpUp
 from ffsdk.xalgo.consensus import (
     getConsensusState,
     prepareUnstakeTransactions,
@@ -37,9 +38,11 @@ burn_amount_unscaled = Decimal(amount_ask) if amount_ask else user_holding_unsca
 burn_amount = int(burn_amount_unscaled * 10**DECIMALS)
 assert burn_amount > 0
 min_to_receive = convertXAlgoToAlgo(burn_amount, consensus_state)
+receiver = sender
 
 print("Preparing unstake txns...")
 print(f"sender: {sender}")
+print(f"receiver: {receiver}")
 print(f"amount of xALGO to unstake: {burn_amount/10**DECIMALS}")
 print(f"calculated ALGO return: {min_to_receive/10**DECIMALS}")
 
@@ -49,11 +52,16 @@ txns = prepareUnstakeTransactions(
     client.consensus_config,
     consensus_state,
     sender,
+    receiver,
     burn_amount,
     min_to_receive,
     params,
     note=None,
 )
+
+opup_budget = 1
+print(f"opup budget: {opup_budget}")
+txns = prefixWithOpUp(ff_client.lending.opup, sender, txns, opup_budget, params)
 
 txn_group = assign_group_id(txns)
 ask_sign_and_send(algod, txn_group, USER_ACCOUNT.sk, simulate=True)

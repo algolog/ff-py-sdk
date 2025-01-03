@@ -11,3 +11,4 @@ def load_contract(fname_json: str) -> Contract:
 
 
 xAlgoABIContract = load_contract("xalgo.json")
+stakeAndDepositABIContract = load_contract("stake_and_deposit.json")

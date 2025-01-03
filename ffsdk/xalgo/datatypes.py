@@ -3,8 +3,9 @@ from dataclasses import dataclass
 
 @dataclass
 class ConsensusConfig:
-    appId: int
+    consensusAppId: int
     xAlgoId: int
+    stakeAndDepositAppId: int
 
 
 @dataclass
@@ -21,13 +22,11 @@ class ConsensusState:
     proposersBalances: list[ProposerBalance]
     timeDelay: int
     numProposers: int
-    minProposerBalance: int
     maxProposerBalance: int
     fee: int  # 4 d.p.
     premium: int  # 16 d.p.
+    lastProposersActiveBalance: int
     totalPendingStake: int
-    totalActiveStake: int
-    totalRewards: int
     totalUnclaimedFees: int
     canImmediateStake: bool
     canDelayStake: bool
