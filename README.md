@@ -119,9 +119,9 @@ Unofficial Python SDK for the [Folks Finance](https://folks.finance) v2 lending 
   - [x] `prepareDelayedStakeTransactions`
   - [x] `prepareClaimDelayedStakeTransactions`
   - [x] `prepareUnstakeTransactions`
-  - [ ] `prepareSetProposerAdminTransaction`
-  - [ ] `prepareRegisterProposerOnlineTransactions`
-  - [ ] `prepareRegisterProposerOfflineTransaction`
+  - [x] `prepareSetProposerAdminTransaction`
+  - [x] `prepareRegisterProposerOnlineTransactions`
+  - [x] `prepareRegisterProposerOfflineTransaction`
 </details>
 
 <details>

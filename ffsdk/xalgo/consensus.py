@@ -37,7 +37,7 @@ def getConsensusState(
     consensusAppId = consensusConfig.consensusAppId
 
     state = get_global_state(algodClient, consensusAppId)
-    box = get_application_box(algodClient, consensusAppId, "pr".encode())
+    box = get_application_box(algodClient, consensusAppId, b"pr")
     current_round = box["round"]
     boxValue = b64decode(box["value"])
     params = algodClient.suggested_params()
@@ -148,7 +148,7 @@ def getTxnsAfterResourceAllocation(
 
     # add xALGO asset and proposers box
     txns[appCallTxnIndex].foreign_assets = [xAlgoId]
-    add_box_to_appcall(txns[appCallTxnIndex], (consensusAppId, "pr".encode()))
+    add_box_to_appcall(txns[appCallTxnIndex], (consensusAppId, b"pr"))
 
     # get all accounts we need to add
     uniqueAddresses = dict.fromkeys(additionalAddresses)
@@ -310,7 +310,7 @@ def prepareImmediateStakeAndDepositTransactions(
         txns.insert(0, prepareDummyTransaction(consensusConfig, senderAddr, params))
         txns[0].accounts = accounts[i : i + 4]
 
-    add_box_to_appcall(txns[0], (consensusAppId, "pr".encode()))
+    add_box_to_appcall(txns[0], (consensusAppId, b"pr"))
     return txns
 
 
@@ -355,7 +355,7 @@ def prepareDelayedStakeTransactions(
     fee = 1000 * (2 + len(consensusState.proposersBalances))
 
     atc = AtomicTransactionComposer()
-    boxName = "dm".encode() + decode_address(senderAddr) + nonce
+    boxName = b"dm" + decode_address(senderAddr) + nonce
 
     atc.add_method_call(
         sender=senderAddr,
@@ -407,7 +407,7 @@ def prepareClaimDelayedStakeTransactions(
     consensusAppId = consensusConfig.consensusAppId
 
     atc = AtomicTransactionComposer()
-    boxName = "dm".encode() + decode_address(minterAddr) + nonce
+    boxName = b"dm" + decode_address(minterAddr) + nonce
 
     atc.add_method_call(
         sender=senderAddr,
@@ -481,3 +481,146 @@ def prepareUnstakeTransactions(
     return getTxnsAfterResourceAllocation(
         consensusConfig, consensusState, txns, [receiverAddr], senderAddr, params
     )
+
+
+def prepareSetProposerAdminTransaction(
+    consensusConfig: ConsensusConfig,
+    consensusState: ConsensusState,
+    senderAddr: str,
+    proposerAddr: str,
+    newProposerAdminAddr: str,
+    params: SuggestedParams,
+) -> Transaction:
+    """
+    Only for third-party node runners.
+    Returns a transaction to set the proposer admin which can register online/offline.
+
+    @param consensusConfig - consensus application and xALGO config
+    @param consensusState - current state of the consensus application
+    @param senderAddr - account address for the sender
+    @param proposerAddr - account address of the proposer
+    @param newProposerAdminAddr - admin which you want to set
+    @param params - suggested params for the transactions with the fees overwritten
+    @returns Transaction set proposer admin transaction
+    """
+    consensusAppId = consensusConfig.consensusAppId
+    proposerIndex = getProposerIndex(consensusState, proposerAddr)
+
+    atc = AtomicTransactionComposer()
+    atc.add_method_call(
+        sender=senderAddr,
+        signer=signer,
+        app_id=consensusAppId,
+        method=xAlgoABIContract.get_method_by_name("set_proposer_admin"),
+        method_args=[proposerIndex, newProposerAdminAddr],
+        boxes=[
+            (consensusAppId, b"pr"),
+            (consensusAppId, b"ap" + decode_address(proposerAddr)),
+        ],
+        sp=sp_fee(params, fee=1000),
+    )
+    txns = remove_signer_and_group(atc.build_group())
+    return txns[0]
+
+
+def prepareRegisterProposerOnlineTransactions(
+    consensusConfig: ConsensusConfig,
+    consensusState: ConsensusState,
+    senderAddr: str,
+    proposerAddr: str,
+    voteKey: bytes,
+    selectionKey: bytes,
+    stateProofKey: bytes,
+    voteFirstRound: int,
+    voteLastRound: int,
+    voteKeyDilution: int,
+    params: SuggestedParams,
+) -> list[Transaction]:
+    """
+    Only for third-party node runners.
+    Returns a transaction to register a proposer online.
+
+    @param consensusConfig - consensus application and xALGO config
+    @param consensusState - current state of the consensus application
+    @param senderAddr - account address for the sender
+    @param proposerAddr - account address of the proposer
+    @param voteKey - vote key
+    @param selectionKey - selection key
+    @param stateProofKey - state proof key
+    @param voteFirstRound - vote first round
+    @param voteLastRound - vote last round
+    @param voteKeyDilution - vote key dilution
+    @param params - suggested params for the transactions with the fees overwritten
+    @returns Transaction register online transaction
+    """
+    consensusAppId = consensusConfig.consensusAppId
+    proposerIndex = getProposerIndex(consensusState, proposerAddr)
+
+    sendAlgo = transferAlgoOrAsset(
+        0, senderAddr, proposerAddr, PAYOUTS_GO_ONLINE_FEE, sp_fee(params, fee=0)
+    )
+
+    atc = AtomicTransactionComposer()
+    atc.add_method_call(
+        sender=senderAddr,
+        signer=signer,
+        app_id=consensusAppId,
+        method=xAlgoABIContract.get_method_by_name("register_online"),
+        method_args=[
+            TransactionWithSigner(sendAlgo, signer),
+            proposerIndex,
+            encode_address(voteKey),
+            encode_address(selectionKey),
+            stateProofKey,
+            voteFirstRound,
+            voteLastRound,
+            voteKeyDilution,
+        ],
+        accounts=[proposerAddr],
+        boxes=[
+            (consensusAppId, b"pr"),
+            (consensusAppId, b"ap" + decode_address(proposerAddr)),
+        ],
+        sp=sp_fee(params, fee=3000),
+    )
+    return remove_signer_and_group(atc.build_group())
+
+
+def prepareRegisterProposerOfflineTransaction(
+    consensusConfig: ConsensusConfig,
+    consensusState: ConsensusState,
+    senderAddr: str,
+    proposerAddr: str,
+    params: SuggestedParams,
+) -> Transaction:
+    """
+    Only for third-party node runners.
+    Returns a transaction to register a proposer offline.
+
+    @param consensusConfig - consensus application and xALGO config
+    @param consensusState - current state of the consensus application
+    @param senderAddr - account address for the sender
+    @param proposerAddr - account address of the proposer
+    @param params - suggested params for the transactions with the fees overwritten
+    @returns Transaction register offline transaction
+    """
+    consensusAppId = consensusConfig.consensusAppId
+    proposerIndex = getProposerIndex(consensusState, proposerAddr)
+
+    atc = AtomicTransactionComposer()
+    atc.add_method_call(
+        sender=senderAddr,
+        signer=signer,
+        app_id=consensusAppId,
+        method=xAlgoABIContract.get_method_by_name("register_offline"),
+        method_args=[proposerIndex],
+        accounts=[proposerAddr],
+        boxes=[
+            (consensusAppId, b"pr"),
+            (consensusAppId, b"ap" + decode_address(proposerAddr)),
+        ],
+        sp=sp_fee(params, fee=2000),
+    )
+
+    txns = remove_signer_and_group(atc.build_group())
+    return txns[0]
