@@ -21,7 +21,7 @@ from ..state_utils import get_global_state, get_application_box, parse_uint64s
 from .constants.mainnet_constants import MAINNET_RESERVE_ADDRESS
 from .abi_contracts import xAlgoABIContract, stakeAndDepositABIContract
 from .datatypes import ConsensusConfig, ConsensusState, ProposerBalance
-from ..lending.v2.datatypes import Pool
+from ..lend.datatypes import Pool
 
 
 def getConsensusState(

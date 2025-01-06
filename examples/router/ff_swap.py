@@ -1,6 +1,6 @@
 from algosdk.v2client.algod import AlgodClient
 from ffsdk.config import Network
-from ffsdk.lending.v2.datatypes import Account
+from ffsdk.lend.datatypes import Account
 from ffsdk.router.client import FolksRouterClient
 from ffsdk.router.datatypes import SwapMode, SwapParams
 from algosdk.encoding import msgpack_decode

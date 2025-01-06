@@ -1,12 +1,12 @@
 from algosdk.v2client.algod import AlgodClient
 from ffsdk.state_utils import AlgodIndexerCombo
 from ffsdk.client import FFMainnetClient
-from ffsdk.lending.v2.constants.mainnet_constants import MainnetPactLPFarms
-from ffsdk.lending.v2.deposit import retrievePoolManagerInfo, retrievePoolInfo
-from ffsdk.lending.v2.deposit_staking import retrieveDepositStakingInfo
-from ffsdk.lending.v2.formulae import calcWithdrawReturn
-from ffsdk.lending.v2.utils import depositStakingProgramsInfo
-from ffsdk.lending.v2.oracle import getOraclePrices
+from ffsdk.lend.constants.mainnet_constants import MainnetPactLPFarms
+from ffsdk.lend.deposit import retrievePoolManagerInfo, retrievePoolInfo
+from ffsdk.lend.deposit_staking import retrieveDepositStakingInfo
+from ffsdk.lend.formulae import calcWithdrawReturn
+from ffsdk.lend.utils import depositStakingProgramsInfo
+from ffsdk.lend.oracle import getOraclePrices
 from ffsdk.mathlib import ONE_14_DP, SECONDS_IN_YEAR
 import pactsdk
 

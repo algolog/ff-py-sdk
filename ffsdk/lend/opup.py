@@ -1,7 +1,7 @@
 from algosdk.transaction import Transaction, SuggestedParams, ApplicationNoOpTxn
 from algosdk.encoding import encode_as_bytes
 from .datatypes import OpUp
-from ...transaction_utils import sp_fee
+from ..transaction_utils import sp_fee
 
 
 def prefixWithOpUp(

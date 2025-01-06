@@ -1,7 +1,7 @@
 from algosdk.v2client.algod import AlgodClient
 from algosdk.v2client.indexer import IndexerClient
 from .config import Network
-from .lending.v2.lending_client import LendingClient
+from .lend.client import LendingClient
 from .algo_liquid_governance.v2.client import AlgoLiquidGovernanceClient
 from .xalgo.client import XAlgoLiquidStakingClient
 

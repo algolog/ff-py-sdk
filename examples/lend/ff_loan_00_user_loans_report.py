@@ -1,8 +1,8 @@
 from ffsdk.client import FFMainnetClient
 from algosdk.v2client.algod import AlgodClient
 from ffsdk.state_utils import AlgodIndexerCombo
-from ffsdk.lending.v2.datatypes import LoanType
-from ffsdk.lending.v2.loan import retrieveUserLoansInfo
+from ffsdk.lend.datatypes import LoanType
+from ffsdk.lend.loan import retrieveUserLoansInfo
 from ffutils import user_loan_report
 import argparse
 

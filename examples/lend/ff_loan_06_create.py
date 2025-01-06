@@ -2,8 +2,8 @@ from ffsdk.client import FFMainnetClient
 from algosdk.v2client.algod import AlgodClient
 from algosdk.transaction import assign_group_id
 from ffsdk.state_utils import AlgodIndexerCombo
-from ffsdk.lending.v2.datatypes import LoanType, Account
-from ffsdk.lending.v2.loan import (
+from ffsdk.lend.datatypes import LoanType, Account
+from ffsdk.lend.loan import (
     retrieveLoanInfo,
     prepareCreateUserLoan,
 )

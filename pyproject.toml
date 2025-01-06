@@ -30,7 +30,7 @@ version = {attr = "ffsdk.__version__"}
 
 [tool.setuptools.package-data]
 ffsdk = [
-    "lending/v2/abi_contracts/*.json",
+    "lend/abi_contracts/*.json",
     "router/abi_contracts/*.json",
     "xalgo/abi_contracts/*.json",
     "oracle/v1/abi_contracts/*.json"

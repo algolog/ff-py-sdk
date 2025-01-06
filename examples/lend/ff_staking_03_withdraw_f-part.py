@@ -2,20 +2,20 @@ from ffsdk.client import FFMainnetClient
 from algosdk.v2client.algod import AlgodClient
 from algosdk.transaction import assign_group_id
 from ffsdk.state_utils import AlgodIndexerCombo
-from ffsdk.lending.v2.datatypes import Account
-from ffsdk.lending.v2.deposit import retrievePoolManagerInfo
-from ffsdk.lending.v2.deposit_staking import (
+from ffsdk.lend.datatypes import Account
+from ffsdk.lend.deposit import retrievePoolManagerInfo
+from ffsdk.lend.deposit_staking import (
     retrieveDepositStakingInfo,
     retrieveUserDepositStakingLocalState,
     prepareWithdrawFromDepositStakingEscrow,
 )
-from ffsdk.lending.v2.utils import (
+from ffsdk.lend.utils import (
     depositStakingProgramsInfo,
     userDepositStakingInfo,
 )
-from ffsdk.lending.v2.formulae import calcWithdrawReturn
-from ffsdk.lending.v2.oracle import getOraclePrices
-from ffsdk.lending.v2.opup import prefixWithOpUp
+from ffsdk.lend.formulae import calcWithdrawReturn
+from ffsdk.lend.oracle import getOraclePrices
+from ffsdk.lend.opup import prefixWithOpUp
 from ffsdk.state_utils import get_balances
 from ffutils import user_staking_report, ask_sign_and_send
 from decimal import Decimal

@@ -1,8 +1,8 @@
 import json
 from algosdk.v2client.indexer import IndexerClient
 from urllib.request import urlopen
-from ...state_utils import get_global_state, get_local_state_at_app, parse_uint64s
-from ...mathlib import compoundEveryHour, ONE_16_DP
+from ..state_utils import get_global_state, get_local_state_at_app, parse_uint64s
+from ..mathlib import compoundEveryHour, ONE_16_DP
 from .datatypes import (
     PactLendingPool,
     PactLendingPoolInfo,

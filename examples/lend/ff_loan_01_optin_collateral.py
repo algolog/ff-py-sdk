@@ -2,26 +2,24 @@ from ffsdk.client import FFMainnetClient
 from algosdk.v2client.algod import AlgodClient
 from algosdk.transaction import assign_group_id
 from ffsdk.state_utils import AlgodIndexerCombo
-from ffsdk.lending.v2.datatypes import Account
-from ffsdk.lending.v2.deposit import retrievePoolManagerInfo
-from ffsdk.lending.v2.deposit_staking import (
-    retrieveDepositStakingInfo,
-    retrieveUserDepositStakingLocalState,
-    prepareOptDepositStakingEscrowIntoAsset,
+from ffsdk.lend.datatypes import LoanType, Account
+from ffsdk.lend.deposit import retrievePoolManagerInfo
+from ffsdk.lend.loan import (
+    retrieveLoanInfo,
+    retrieveLoanLocalState,
+    prepareAddCollateralToLoan,
 )
-from ffsdk.lending.v2.utils import (
-    depositStakingProgramsInfo,
-    userDepositStakingInfo,
-)
-from ffsdk.lending.v2.oracle import getOraclePrices
-from ffsdk.lending.v2.opup import prefixWithOpUp
+from ffsdk.lend.utils import userLoanInfo
+from ffsdk.lend.oracle import getOraclePrices
+from ffsdk.lend.opup import prefixWithOpUp
 from ffsdk.state_utils import get_balances
-from ffutils import user_staking_report, ask_sign_and_send
+from ffsdk.transaction_utils import transferAlgoOrAsset
+from ffutils import user_loan_report, ask_sign_and_send
 import argparse
 
 USER_ACCOUNT = Account(addr="", sk="")
 
-parser = argparse.ArgumentParser(description="Optin into asset for deposit staking escrow")
+parser = argparse.ArgumentParser(description="Optin loan escrow into collateral asset")
 parser.add_argument("escrow_address")
 args = parser.parse_args()
 
@@ -31,35 +29,36 @@ algod = AlgodClient(algod_token, algod_address)
 indexer = AlgodIndexerCombo(algod, "", "https://mainnet-idx.algonode.cloud")
 client = FFMainnetClient(algod, indexer).lending
 
-# retrieve general pool information and oracle prices
+# retrieve general pools information and oracle prices
 pmi = retrievePoolManagerInfo(client.indexer, client.pool_manager_app_id)
 oracle_prices = getOraclePrices(client.indexer, client.oracle)
 market_by_id = {pool.appId: name for name, pool in client.pools.items()}
 pool_by_asset = {pool.assetId: name for name, pool in client.pools.items()}
 
-# deposit staking info
-dsi = retrieveDepositStakingInfo(client.indexer, client.deposit_staking_app_id)
-dspi = depositStakingProgramsInfo(dsi, pmi, client.pools, oracle_prices)
-
 escrow = args.escrow_address
-udsls = retrieveUserDepositStakingLocalState(client.indexer, client.deposit_staking_app_id, escrow)
-udsi = userDepositStakingInfo(udsls, pmi, dspi)
-assert udsi.escrowAddress == escrow
-user_address = udsi.userAddress
+
+# deduce loan type by checking escrow local state at loan apps
+for ltype in LoanType:
+    try:
+        local_state = retrieveLoanLocalState(client.indexer, client.loans[ltype], escrow)
+        break
+    except LookupError:
+        pass
+
+# fetch loan info
+loan_app_id = client.loans[ltype]
+loan_info = retrieveLoanInfo(client.indexer, loan_app_id)
+loan = userLoanInfo(local_state, pmi, loan_info, oracle_prices)
+assert loan.escrowAddress == escrow
+user_address = loan.userAddress
 
 # print report
 print(f"addres: {user_address}")
-user_staking_report(udsi, client.pools)
+user_loan_report(loan, ltype, client.pools)
 
 # configure optin
-stakeIndex = 0
-index_ask = input(f'Stake index [{stakeIndex}]: ')
-if index_ask:
-    stakeIndex = int(index_ask)
-
-# select staking program by index
-stakingProgram = udsi.stakingPrograms[stakeIndex]
-market = market_by_id[stakingProgram.poolAppId]
+print("Markets:", *client.pools.keys())
+market = input('Select market: ')
 pool = client.pools[market]
 escrow_holdings = get_balances(indexer, escrow)
 if pool.fAssetId in escrow_holdings:
@@ -72,21 +71,22 @@ print("Preparing optin txns...")
 print(f"market: {market}")
 print(f"escrow: {escrow}")
 print(f"sender: {user_address}")
-print(f"staking index: {stakeIndex}")
 
 # prepare txns
 params = client.algod.suggested_params()
 
-optin_txn = prepareOptDepositStakingEscrowIntoAsset(
-    client.deposit_staking_app_id,
+send_txn = transferAlgoOrAsset(0, sender, escrow, 100_000, params)
+
+optin_txn = prepareAddCollateralToLoan(
+    loan_app_id,
+    client.pool_manager_app_id,
     user_address,
     escrow,
     pool,
-    stakeIndex,
     params,
 )
 
-unsigned_txns = [optin_txn]
+unsigned_txns = [send_txn, optin_txn]
 
 # add opup transactions to increase opcode budget
 opup_budget = 0

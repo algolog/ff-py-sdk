@@ -13,7 +13,7 @@ from algosdk.atomic_transaction_composer import (
     AtomicTransactionComposer,
     TransactionWithSigner,
 )
-from ...mathlib import (
+from ..mathlib import (
     ONE_16_DP,
     ONE_10_DP,
     UINT64,
@@ -29,7 +29,7 @@ from .formulae import (
 from .utils import getEscrows
 from .oracle import getOraclePrices
 from .abi_contracts import depositsABIContract, poolABIContract
-from ...transaction_utils import (
+from ..transaction_utils import (
     signer,
     sp_fee,
     remove_signer_and_group,
@@ -37,7 +37,7 @@ from ...transaction_utils import (
     addEscrowNoteTransaction,
     removeEscrowNoteTransaction,
 )
-from ...state_utils import (
+from ..state_utils import (
     get_global_state,
     get_balances,
     parse_uint64s,

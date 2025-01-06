@@ -3,12 +3,8 @@ from algosdk.logic import get_application_address
 from algosdk.encoding import encode_address
 from time import time
 from base64 import b64decode
-from ...state_utils import (
-    parse_uint64s,
-    format_state,
-    get_accounts_opted_into_app
-)
-from ...mathlib import (
+from ..state_utils import parse_uint64s, format_state, get_accounts_opted_into_app
+from ..mathlib import (
     ONE_10_DP,
     ONE_12_DP,
     ONE_16_DP,

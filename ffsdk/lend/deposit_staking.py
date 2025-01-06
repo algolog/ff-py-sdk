@@ -22,7 +22,7 @@ from .datatypes import (
     UserDepositStakingLocalState,
     Account,
 )
-from ...transaction_utils import (
+from ..transaction_utils import (
     signer,
     sp_fee,
     remove_signer_and_group,
@@ -30,7 +30,7 @@ from ...transaction_utils import (
     removeEscrowNoteTransaction,
 )
 from .abi_contracts import depositStakingABIContract
-from ...state_utils import get_global_state, get_balances, get_local_state_at_app
+from ..state_utils import get_global_state, get_balances, get_local_state_at_app
 
 
 def retrieveDepositStakingInfo(

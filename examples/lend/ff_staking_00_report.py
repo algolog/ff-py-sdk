@@ -1,16 +1,16 @@
 from ffsdk.client import FFMainnetClient
 from algosdk.v2client.algod import AlgodClient
 from ffsdk.state_utils import AlgodIndexerCombo
-from ffsdk.lending.v2.deposit import retrievePoolManagerInfo
-from ffsdk.lending.v2.deposit_staking import (
+from ffsdk.lend.deposit import retrievePoolManagerInfo
+from ffsdk.lend.deposit_staking import (
     retrieveDepositStakingInfo,
     retrieveUserDepositStakingsLocalState,
 )
-from ffsdk.lending.v2.utils import (
+from ffsdk.lend.utils import (
     depositStakingProgramsInfo,
     userDepositStakingInfo,
 )
-from ffsdk.lending.v2.oracle import getOraclePrices
+from ffsdk.lend.oracle import getOraclePrices
 from ffutils import user_staking_report
 import argparse
 

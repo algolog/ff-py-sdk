@@ -1,5 +1,5 @@
 # ff-py-sdk
-Unofficial Python SDK for the [Folks Finance](https://folks.finance) v2 lending protocol on the Algorand blockchain. Direct translation of most functions from the [folks-finance-js-sdk](https://github.com/Folks-Finance/folks-finance-js-sdk) and [folks-router-js-sdk](https://github.com/Folks-Finance/folks-router/tree/main/packages/folks-router-js-sdk) into Python.
+Unofficial Python SDK for the [Folks Finance](https://folks.finance) v2 lending protocol on the Algorand blockchain. Direct translation of most functions from the [Folks-Finance/algorand-js-sdk](https://github.com/Folks-Finance/algorand-js-sdk) and [folks-router-js-sdk](https://github.com/Folks-Finance/folks-router/tree/main/packages/folks-router-js-sdk) into Python.
 
 * Function names and arguments are preserved from the JS SDK. Camel case and snake case code styles are often mixed.
 * `currentRound` field was dropped from the returned data types.
@@ -142,10 +142,10 @@ Unofficial Python SDK for the [Folks Finance](https://folks.finance) v2 lending 
 ## Example
 ```python
 from ffsdk.client import FFMainnetClient
-from ffsdk.lending.v2.deposit import retrievePoolManagerInfo, retrievePoolInfo
-from ffsdk.lending.v2.deposit_staking import retrieveDepositStakingInfo
-from ffsdk.lending.v2.utils import depositStakingProgramsInfo
-from ffsdk.lending.v2.oracle import getOraclePrices
+from ffsdk.lend.deposit import retrievePoolManagerInfo, retrievePoolInfo
+from ffsdk.lend.deposit_staking import retrieveDepositStakingInfo
+from ffsdk.lend.utils import depositStakingProgramsInfo
+from ffsdk.lend.oracle import getOraclePrices
 from ffsdk.mathlib import ONE_14_DP
 
 

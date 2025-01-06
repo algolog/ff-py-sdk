@@ -1,13 +1,13 @@
 from algosdk.v2client.algod import AlgodClient
 from algosdk.transaction import Transaction, write_to_file, wait_for_confirmation
-from ffsdk.lending.v2.datatypes import (
+from ffsdk.lend.datatypes import (
     Pool,
     LoanType,
     UserDepositFullInfo,
     UserDepositStakingInfo,
     UserLoanInfo,
 )
-from ffsdk.lending.v2.loan import getUserLoanAssets
+from ffsdk.lend.loan import getUserLoanAssets
 from ffsdk.mathlib import ONE_4_DP, ONE_14_DP
 
 

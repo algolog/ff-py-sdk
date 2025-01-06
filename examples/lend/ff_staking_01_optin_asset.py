@@ -2,25 +2,26 @@ from ffsdk.client import FFMainnetClient
 from algosdk.v2client.algod import AlgodClient
 from algosdk.transaction import assign_group_id
 from ffsdk.state_utils import AlgodIndexerCombo
-from ffsdk.lending.v2.datatypes import Account
-from ffsdk.lending.v2.deposit import retrievePoolManagerInfo
-from ffsdk.lending.v2.deposit_staking import (
+from ffsdk.lend.datatypes import Account
+from ffsdk.lend.deposit import retrievePoolManagerInfo
+from ffsdk.lend.deposit_staking import (
     retrieveDepositStakingInfo,
     retrieveUserDepositStakingLocalState,
-    prepareClaimRewardsOfDepositStakingEscrow,
+    prepareOptDepositStakingEscrowIntoAsset,
 )
-from ffsdk.lending.v2.utils import (
+from ffsdk.lend.utils import (
     depositStakingProgramsInfo,
     userDepositStakingInfo,
 )
-from ffsdk.lending.v2.oracle import getOraclePrices
-from ffsdk.lending.v2.opup import prefixWithOpUp
+from ffsdk.lend.oracle import getOraclePrices
+from ffsdk.lend.opup import prefixWithOpUp
+from ffsdk.state_utils import get_balances
 from ffutils import user_staking_report, ask_sign_and_send
 import argparse
 
 USER_ACCOUNT = Account(addr="", sk="")
 
-parser = argparse.ArgumentParser(description="Claim deposit staking rewards")
+parser = argparse.ArgumentParser(description="Optin into asset for deposit staking escrow")
 parser.add_argument("escrow_address")
 args = parser.parse_args()
 
@@ -50,7 +51,7 @@ user_address = udsi.userAddress
 print(f"addres: {user_address}")
 user_staking_report(udsi, client.pools)
 
-# configure claim
+# configure optin
 stakeIndex = 0
 index_ask = input(f'Stake index [{stakeIndex}]: ')
 if index_ask:
@@ -60,35 +61,32 @@ if index_ask:
 stakingProgram = udsi.stakingPrograms[stakeIndex]
 market = market_by_id[stakingProgram.poolAppId]
 pool = client.pools[market]
-rewards_amount = {r.rewardAssetId: r.unclaimedReward for r in stakingProgram.rewards}
-rewardAssetIds = [r.rewardAssetId for r in stakingProgram.rewards]
+escrow_holdings = get_balances(indexer, escrow)
+if pool.fAssetId in escrow_holdings:
+    raise ValueError(f"Escrow is already opted into {market}")
 
 sender = USER_ACCOUNT.addr
-receiver = user_address
 assert user_address == sender
 
-print("Preparing claim txns...")
+print("Preparing optin txns...")
 print(f"market: {market}")
-print(f"unclaimed rewards: {rewards_amount}")
 print(f"escrow: {escrow}")
 print(f"sender: {user_address}")
-print(f"reciever: {receiver}")
 print(f"staking index: {stakeIndex}")
 
 # prepare txns
 params = client.algod.suggested_params()
 
-claim_txns = prepareClaimRewardsOfDepositStakingEscrow(
+optin_txn = prepareOptDepositStakingEscrowIntoAsset(
     client.deposit_staking_app_id,
     user_address,
     escrow,
-    receiver,
+    pool,
     stakeIndex,
-    rewardAssetIds,
-    params
+    params,
 )
 
-unsigned_txns = claim_txns
+unsigned_txns = [optin_txn]
 
 # add opup transactions to increase opcode budget
 opup_budget = 0

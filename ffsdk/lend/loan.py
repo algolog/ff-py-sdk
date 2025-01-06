@@ -13,7 +13,7 @@ from algosdk.atomic_transaction_composer import (
 from algosdk.logic import get_application_address
 from algosdk.account import generate_account
 from .utils import getEscrows, loanLocalState, userLoanInfo
-from ...mathlib import divScale, mulScale, ONE_4_DP, ONE_10_DP
+from ..mathlib import divScale, mulScale, ONE_4_DP, ONE_10_DP
 from .formulae import (
     calcBorrowUtilisationRatio,
     calcDepositReturn,
@@ -22,7 +22,7 @@ from .formulae import (
 from .deposit import retrievePoolManagerInfo
 from .oracle import getOraclePrices, prepareRefreshPricesInOracleAdapter
 from .abi_contracts import loanABIContract, poolABIContract
-from ...transaction_utils import (
+from ..transaction_utils import (
     signer,
     sp_fee,
     remove_signer_and_group,
@@ -30,7 +30,7 @@ from ...transaction_utils import (
     addEscrowNoteTransaction,
     removeEscrowNoteTransaction,
 )
-from ...state_utils import (
+from ..state_utils import (
     get_global_state,
     get_local_state_at_app,
     format_state,

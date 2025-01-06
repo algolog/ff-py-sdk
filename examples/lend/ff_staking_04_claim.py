@@ -1,31 +1,26 @@
 from ffsdk.client import FFMainnetClient
 from algosdk.v2client.algod import AlgodClient
-from algosdk.transaction import assign_group_id, write_to_file
+from algosdk.transaction import assign_group_id
 from ffsdk.state_utils import AlgodIndexerCombo
-from ffsdk.lending.v2.datatypes import Account
-from ffsdk.lending.v2.deposit import (
-    retrievePoolManagerInfo,
-    prepareDepositIntoPool,
-)
-from ffsdk.lending.v2.deposit_staking import (
+from ffsdk.lend.datatypes import Account
+from ffsdk.lend.deposit import retrievePoolManagerInfo
+from ffsdk.lend.deposit_staking import (
     retrieveDepositStakingInfo,
     retrieveUserDepositStakingLocalState,
-    prepareSyncStakeInDepositStakingEscrow,
+    prepareClaimRewardsOfDepositStakingEscrow,
 )
-from ffsdk.lending.v2.utils import (
+from ffsdk.lend.utils import (
     depositStakingProgramsInfo,
     userDepositStakingInfo,
 )
-from ffsdk.lending.v2.oracle import getOraclePrices
-from ffsdk.lending.v2.opup import prefixWithOpUp
-from ffsdk.state_utils import get_balances
+from ffsdk.lend.oracle import getOraclePrices
+from ffsdk.lend.opup import prefixWithOpUp
 from ffutils import user_staking_report, ask_sign_and_send
-from decimal import Decimal
 import argparse
 
 USER_ACCOUNT = Account(addr="", sk="")
 
-parser = argparse.ArgumentParser(description="Deposit into deposit staking escrow")
+parser = argparse.ArgumentParser(description="Claim deposit staking rewards")
 parser.add_argument("escrow_address")
 args = parser.parse_args()
 
@@ -55,7 +50,7 @@ user_address = udsi.userAddress
 print(f"addres: {user_address}")
 user_staking_report(udsi, client.pools)
 
-# configure deposit
+# configure claim
 stakeIndex = 0
 index_ask = input(f'Stake index [{stakeIndex}]: ')
 if index_ask:
@@ -65,54 +60,35 @@ if index_ask:
 stakingProgram = udsi.stakingPrograms[stakeIndex]
 market = market_by_id[stakingProgram.poolAppId]
 pool = client.pools[market]
-fAssetId = stakingProgram.fAssetId
-user_holdings = get_balances(indexer, user_address)
-escrow_holdings = get_balances(indexer, escrow)
-
-user_holding_unscaled = Decimal(user_holdings[pool.assetId]) / 10**pool.assetDecimals
-print(f"market: {market}")
-print(f"user_holding_unscaled: {user_holding_unscaled}")
-print(f"f-staked: {stakingProgram.fAssetStakedAmount:_}")
-if fAssetId not in escrow_holdings:
-    raise ValueError(f"Escrow is not opted into fAsset {fAssetId} (f-{market})")
-
-# ask amount
-max_to_deposit = user_holding_unscaled
-amount_ask = input(f'Amount of {market} to deposit [{max_to_deposit}]: ').strip()
-deposit_amount_unscaled = Decimal(amount_ask) if amount_ask else max_to_deposit
-deposit_amount = int(deposit_amount_unscaled * 10**pool.assetDecimals)
+rewards_amount = {r.rewardAssetId: r.unclaimedReward for r in stakingProgram.rewards}
+rewardAssetIds = [r.rewardAssetId for r in stakingProgram.rewards]
 
 sender = USER_ACCOUNT.addr
+receiver = user_address
 assert user_address == sender
 
-print("Preparing deposit txns...")
-print(f"sender: {user_address}")
+print("Preparing claim txns...")
+print(f"market: {market}")
+print(f"unclaimed rewards: {rewards_amount}")
 print(f"escrow: {escrow}")
+print(f"sender: {user_address}")
+print(f"reciever: {receiver}")
 print(f"staking index: {stakeIndex}")
-print(f"amount: {deposit_amount:_}")
 
 # prepare txns
 params = client.algod.suggested_params()
 
-deposit_txns = prepareDepositIntoPool(
-    pool,
-    client.pool_manager_app_id,
-    user_address,
-    escrow,
-    deposit_amount,
-    params,
-)
-
-sync_txn = prepareSyncStakeInDepositStakingEscrow(
+claim_txns = prepareClaimRewardsOfDepositStakingEscrow(
     client.deposit_staking_app_id,
-    pool,
     user_address,
     escrow,
+    receiver,
     stakeIndex,
+    rewardAssetIds,
     params
 )
 
-unsigned_txns = deposit_txns + [sync_txn]
+unsigned_txns = claim_txns
 
 # add opup transactions to increase opcode budget
 opup_budget = 0
@@ -121,6 +97,5 @@ unsigned_txns = prefixWithOpUp(client.opup, sender, unsigned_txns, opup_budget, 
 
 # Prepare a transaction group
 txn_group = assign_group_id(unsigned_txns)
-#write_to_file(txn_group, '_ff_staking_deposit.txns')
 
 ask_sign_and_send(algod, txn_group, USER_ACCOUNT.sk)

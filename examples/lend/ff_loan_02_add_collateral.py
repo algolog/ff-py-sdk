@@ -2,25 +2,29 @@ from ffsdk.client import FFMainnetClient
 from algosdk.v2client.algod import AlgodClient
 from algosdk.transaction import assign_group_id
 from ffsdk.state_utils import AlgodIndexerCombo
-from ffsdk.lending.v2.datatypes import LoanType, Account
-from ffsdk.lending.v2.deposit import retrievePoolManagerInfo
-from ffsdk.lending.v2.loan import (
+from ffsdk.lend.datatypes import LoanType, Account
+from ffsdk.lend.deposit import (
+    retrievePoolManagerInfo,
+    prepareDepositIntoPool,
+)
+from ffsdk.lend.loan import (
     retrieveLoanInfo,
     retrieveLoanLocalState,
-    getUserLoanAssets,
-    prepareRepayLoanWithTxn,
+    prepareSyncCollateralInLoan,
+
 )
-from ffsdk.lending.v2.utils import userLoanInfo
-from ffsdk.lending.v2.oracle import getOraclePrices
-from ffsdk.lending.v2.opup import prefixWithOpUp
-from ffsdk.mathlib import ONE_4_DP, ONE_14_DP
+from ffsdk.lend.utils import userLoanInfo
+from ffsdk.lend.oracle import getOraclePrices
+from ffsdk.lend.opup import prefixWithOpUp
 from ffsdk.state_utils import get_balances
 from ffutils import user_loan_report, ask_sign_and_send
+from decimal import Decimal
 import argparse
 
 USER_ACCOUNT = Account(addr="", sk="")
+MIN_ALGO_BALANCE = Decimal("100")
 
-parser = argparse.ArgumentParser(description="Repay loan in escrow")
+parser = argparse.ArgumentParser(description="Deposit collateral to loan escrow")
 parser.add_argument("escrow_address")
 args = parser.parse_args()
 
@@ -57,62 +61,69 @@ user_address = loan.userAddress
 print(f"addres: {user_address}")
 user_loan_report(loan, ltype, client.pools)
 
-# configure repay
-loan_pools = list(loan_info.pools)
-print(", ".join(['{}-{}'.format(i, market_by_id[b.poolAppId]) for i, b in enumerate(loan.borrows)]))
-borrow_ask = input('Borrow market [0]: ')
-borrow_ask = int(borrow_ask) if borrow_ask else 0
-borrow_to_repay = loan.borrows[borrow_ask]
-market = market_by_id[borrow_to_repay.poolAppId]
+# configure deposit
+print(", ".join(['{}-{}'.format(i, market_by_id[c.poolAppId]) for i, c in enumerate(loan.collaterals)]))
+default_collateral = 0
+collateral_ask = input(f'Deposit market [{default_collateral}]: ')
+collateral_ask = int(collateral_ask) if collateral_ask else default_collateral
+collateral_to_deposit = loan.collaterals[int(collateral_ask)]
+market = market_by_id[collateral_to_deposit.poolAppId]
 pool = client.pools[market]
-pool_loan_info = loan_info.pools[pool.appId]
-depositInterestIndex = pmi.pools[pool.appId].depositInterestIndex
-borrow_apy = pmi.pools[pool.appId].variableBorrowInterestYield / ONE_14_DP
-asset_price = oracle_prices[pool.assetId].price
+fAssetId = pool.fAssetId
 user_holdings = get_balances(indexer, user_address)
 escrow_holdings = get_balances(indexer, escrow)
-lpAssets, baseAssetIds = getUserLoanAssets(client.pools, loan)
-if pool.assetId not in user_holdings:
-    raise ValueError(f'User is not opted into {pool.AssetId} ({market})')
 
-user_holding_unscaled = user_holdings[pool.assetId] / 10**pool.assetDecimals
+user_holding_unscaled = Decimal(user_holdings[pool.assetId]) / 10**pool.assetDecimals
 print(f"market: {market}")
-print(f"borrow APY: {borrow_apy:.2f}%")
-print(f"user_holding_unscaled: {user_holding_unscaled:}")
+print(f"user_holding_unscaled: {user_holding_unscaled}")
+if fAssetId not in escrow_holdings:
+    raise ValueError(f"Escrow is not opted into fAsset {fAssetId} (f-{market})")
 
 # ask amount
-max_to_repay = borrow_to_repay.borrowBalance
-repay_amount = max_to_repay
+max_to_deposit = user_holding_unscaled
+if market == "ALGO":
+    max_to_deposit = max(0, user_holding_unscaled - MIN_ALGO_BALANCE)
+amount_ask = input(f'Amount of {market} to deposit [{max_to_deposit}]: ').strip()
+deposit_amount_unscaled = Decimal(amount_ask) if amount_ask else max_to_deposit
+deposit_amount = int(deposit_amount_unscaled * 10**pool.assetDecimals)
 
 sender = USER_ACCOUNT.addr
 assert user_address == sender
-receiver = user_address
 
-print("Preparing repay txns...")
+print("Preparing deposit txns...")
 print(f"sender: {user_address}")
-print(f"receiver: {receiver}")
 print(f"escrow: {escrow}")
-print(f"repay_amount: {repay_amount:_}")
 print(f"market: {market}")
+print(f"amount: {deposit_amount:_}")
 
 # prepare txns
 params = client.algod.suggested_params()
 
-repay_txns = prepareRepayLoanWithTxn(
-    loanAppId=loan_app_id,
-    poolManagerAppId=client.pool_manager_app_id,
-    userAddr=user_address,
-    escrowAddr=escrow,
-    receiverAddr=receiver,
-    reserveAddr=client.reserve_address,
-    pool=pool,
-    repayAmount=repay_amount,
-    isStable=False,
-    params=params,
+deposit_txns = prepareDepositIntoPool(
+    pool,
+    client.pool_manager_app_id,
+    user_address,
+    escrow,
+    deposit_amount,
+    params,
 )
 
-unsigned_txns = repay_txns
+sync_txns = prepareSyncCollateralInLoan(
+    loan_app_id,
+    client.pool_manager_app_id,
+    user_address,
+    escrow,
+    pool,
+    client.oracle,
+    params,
+)
 
+unsigned_txns = deposit_txns + sync_txns
+
+# add opup transactions to increase opcode budget
+opup_budget = 0
+print(f"opup budget: {opup_budget}")
+unsigned_txns = prefixWithOpUp(client.opup, sender, unsigned_txns, opup_budget, params)
 
 # Prepare a transaction group
 txn_group = assign_group_id(unsigned_txns)
