@@ -409,6 +409,15 @@ class UserLoanInfo:
     liquidationMargin: int  # 4 d.p.
 
 
+@dataclass
+class AssetAdditionalInterest:
+    rateBps: int  # 4 d.p.
+    yieldBps: int  # 4 d.p.
+
+
+AssetsAdditionalInterest = dict[int, AssetAdditionalInterest]  # assetId -> interest
+
+
 # ORACLE TYPES
 
 

@@ -6,6 +6,7 @@ HOURS_IN_YEAR = 365 * 24
 ONE_2_DP = int(1e2)
 ONE_4_DP = int(1e4)
 ONE_10_DP = int(1e10)
+ONE_12_DP = int(1e12)
 ONE_14_DP = int(1e14)
 ONE_16_DP = int(1e16)
 

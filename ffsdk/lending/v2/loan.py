@@ -36,6 +36,7 @@ from ...state_utils import (
     format_state,
 )
 from .datatypes import (
+    AssetsAdditionalInterest,
     LoanInfo,
     PoolLoanInfo,
     LoanLocalState,
@@ -147,6 +148,7 @@ def retrieveUserLoansInfo(
     poolManagerAppId: int,
     oracle: Oracle,
     userAddr: str,
+    additionalInterests: AssetsAdditionalInterest | None = None,
 ) -> list[UserLoanInfo]:
     """
     Returns information regarding the loan escrows of a given user.
@@ -156,6 +158,7 @@ def retrieveUserLoansInfo(
     @param poolManagerAppId - pool manager application to query about
     @param oracle - oracle to query
     @param userAddr - account address for the user
+    @param additionalInterests - optional additional interest to consider in loan net rate/yield
     @returns Promise<UserLoanInfo[]> user loans infos
     """
     userLoanInfos: list[UserLoanInfo] = []
@@ -173,7 +176,9 @@ def retrieveUserLoansInfo(
             raise LookupError(f"Could not find loan {loanAppId} in escrow {escrowAddr}")
         localState = loanLocalState(state, loanAppId, escrowAddr)
         userLoanInfos.append(
-            userLoanInfo(localState, poolManagerInfo, loanInfo, oraclePrices)
+            userLoanInfo(
+                localState, poolManagerInfo, loanInfo, oraclePrices, additionalInterests
+            )
         )
 
     return userLoanInfos
@@ -185,6 +190,7 @@ def retrieveUserLoanInfo(
     poolManagerAppId: int,
     oracle: Oracle,
     escrowAddr: str,
+    additionalInterests: AssetsAdditionalInterest | None = None,
 ) -> UserLoanInfo:
     """
     Returns information regarding the given user loan escrow.
@@ -194,6 +200,7 @@ def retrieveUserLoanInfo(
     @param poolManagerAppId - pool manager application to query about
     @param oracle - oracle to query
     @param escrowAddr - account address for the loan escrow
+    @param additionalInterests - optional additional interest to consider in loan net rate/yield
     @returns Promise<UserLoanInfo> user loan info
     """
     # get all prerequisites
@@ -206,7 +213,9 @@ def retrieveUserLoanInfo(
     if state is None:
         raise LookupError(f"Could not find loan {loanAppId} in escrow {escrowAddr}")
     localState = loanLocalState(state, loanAppId, escrowAddr)
-    return userLoanInfo(localState, poolManagerInfo, loanInfo, oraclePrices)
+    return userLoanInfo(
+        localState, poolManagerInfo, loanInfo, oraclePrices, additionalInterests
+    )
 
 
 def retrieveLiquidatableLoans(

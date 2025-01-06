@@ -10,6 +10,7 @@ from ...state_utils import (
 )
 from ...mathlib import (
     ONE_10_DP,
+    ONE_12_DP,
     ONE_16_DP,
     ONE_4_DP,
     SECONDS_IN_YEAR,
@@ -27,6 +28,7 @@ from .formulae import (
     calcWithdrawReturn,
 )
 from .datatypes import (
+    AssetsAdditionalInterest,
     DepositStakingInfo,
     DepositStakingProgramInfo,
     DSPInfoReward,
@@ -393,6 +395,7 @@ def userLoanInfo(
     poolManagerInfo: PoolManagerInfo,
     loanInfo: LoanInfo,
     oraclePrices: OraclePrices,
+    additionalInterests: AssetsAdditionalInterest | None = None,
 ) -> UserLoanInfo:
     """
     Derives user loan info from escrow account.
@@ -402,6 +405,7 @@ def userLoanInfo(
     @param poolManagerInfo - pool manager info which is returned by retrievePoolManagerInfo function
     @param loanInfo - loan info which is returned by retrieveLoanInfo function
     @param oraclePrices - oracle prices which is returned by getOraclePrices function
+    @param additionalInterests - optional additional interest to consider in loan net rate/yield
     @returns Promise<UserLoansInfo> user loans info
     """
     poolManagerPools = poolManagerInfo.pools
@@ -449,6 +453,14 @@ def userLoanInfo(
         totalEffectiveCollateralBalanceValue += effectiveBalanceValue
         netRate += balanceValue * depositInterestRate
         netYield += balanceValue * depositInterestYield
+
+        # add additional interests if specified
+        if additionalInterests and (assetId in additionalInterests):
+            rateBps = additionalInterests[assetId].rateBps
+            yieldBps = additionalInterests[assetId].yieldBps
+            # multiply by 1e12 to standardise at 16 d.p.
+            netRate += balanceValue * rateBps * ONE_12_DP
+            netYield += balanceValue * yieldBps * ONE_12_DP
 
         collaterals.append(
             UserLoanInfoCollateral(
@@ -521,6 +533,14 @@ def userLoanInfo(
         totalEffectiveBorrowBalanceValue += effectiveBorrowBalanceValue
         netRate -= borrowBalanceValue * interestRate
         netYield -= borrowBalanceValue * interestYield
+
+        # subtracts additional interests if specified
+        if additionalInterests and (assetId in additionalInterests):
+            rateBps = additionalInterests[assetId].rateBps
+            yieldBps = additionalInterests[assetId].yieldBps
+            # multiply by 1e12 to standardise at 16 d.p.
+            netRate -= borrowBalanceValue * rateBps * ONE_12_DP
+            netYield -= borrowBalanceValue * yieldBps * ONE_12_DP
 
         borrows.append(
             UserLoanInfoBorrow(
