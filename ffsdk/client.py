@@ -28,11 +28,11 @@ class FFClient:
 class FFTestnetClient(FFClient):
     def __init__(self, algod_client=None, indexer_client=None):
         if algod_client is None:
-            algod_client = AlgodClient("", "https://testnet-api.algonode.cloud")
+            algod_client = AlgodClient("", "https://testnet-api.4160.nodely.dev")
         if indexer_client is None:
             indexer_client = IndexerClient(
                     "",
-                    "https://algoindexer.testnet.algoexplorerapi.io",
+                    "https://testnet-idx.4160.nodely.dev",
                     headers={"User-Agent": "algosdk"})
         super().__init__(
                 algod_client,
