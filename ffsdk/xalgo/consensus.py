@@ -483,6 +483,44 @@ def prepareUnstakeTransactions(
     )
 
 
+def prepareClaimConsensusFeesTransactions(
+    consensusConfig: ConsensusConfig,
+    consensusState: ConsensusState,
+    senderAddr: str,
+    receiverAddr: str,
+    params: SuggestedParams,
+) -> list[Transaction]:
+    """
+    Returns a group transaction to claim xALGO fees.
+
+    @param consensusConfig - consensus application and xALGO config
+    @param consensusState - current state of the consensus application
+    @param senderAddr - account address for the sender
+    @param receiverAddr - account address to receive the ALGO fees
+    @param params - suggested params for the transactions with the fees overwritten
+    @returns Transaction[] claim fees transactions
+    """
+    consensusAppId = consensusConfig.consensusAppId
+
+    fee = 1000 * (2 + len(consensusState.proposersBalances))
+
+    atc = AtomicTransactionComposer()
+    atc.add_method_call(
+        sender=senderAddr,
+        signer=signer,
+        app_id=consensusAppId,
+        method=xAlgoABIContract.get_method_by_name("claim_fee"),
+        method_args=[],
+        sp=sp_fee(params, fee=fee),
+    )
+
+    # allocate resources
+    txns = remove_signer_and_group(atc.build_group())
+    return getTxnsAfterResourceAllocation(
+        consensusConfig, consensusState, txns, [receiverAddr], senderAddr, params
+    )
+
+
 def prepareSetProposerAdminTransaction(
     consensusConfig: ConsensusConfig,
     consensusState: ConsensusState,
