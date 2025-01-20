@@ -80,6 +80,8 @@ def user_staking_report(udsi: UserDepositStakingInfo, pools: dict[str, Pool]):
     )
     print("~" * SEP)
     for stakeIndex, sp in enumerate(udsi.stakingPrograms):
+        if sp.fAssetId not in udsi.optedIntoAssets:
+            continue
         pool_name = pool_by_id[sp.poolAppId]
         pool = pools[pool_name]
         value_usd = sp.stakedAmountValue / ONE_4_DP

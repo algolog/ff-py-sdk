@@ -159,7 +159,11 @@ def retrieveUserDepositStakingLocalState(
         raise ValueError(
             f"Could not find deposit staking {depositStakingAppId} in escrow {escrowAddr}"
         )
-    return depositStakingLocalState(state, depositStakingAppId, escrowAddr)
+    user_staking_state = depositStakingLocalState(state, depositStakingAppId, escrowAddr)
+    holdings = get_balances(indexerClient, escrowAddr)
+    user_staking_state.optedIntoAssets = set(holdings.keys())
+
+    return user_staking_state
 
 
 def prepareAddDepositStakingEscrow(
