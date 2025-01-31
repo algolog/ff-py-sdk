@@ -57,6 +57,16 @@ LendingPool = PactLendingPool | TinymanLendingPool
 
 
 @dataclass
+class LendingPoolInterest:
+    asset0DepositInterestRate: int  # 16 d.p.
+    asset0DepositInterestYield: int  # approximation 16 d.p.
+    asset1DepositInterestRate: int  # 16 d.p.
+    asset1DepositInterestYield: int  # approximation 16 d.p.
+    additionalInterestRate: int | None  # 16 d.p.
+    additionalInterestYield: int | None  # approximation 16 d.p.
+
+
+@dataclass
 class BaseLendingPoolInfo:
     fAsset0Supply: int
     fAsset1Supply: int
@@ -68,6 +78,8 @@ class BaseLendingPoolInfo:
     asset0DepositInterestYield: int  # approximation 16 d.p.
     asset1DepositInterestRate: int  # 16 d.p.
     asset1DepositInterestYield: int  # approximation 16 d.p.
+    additionalInterestRate: int | None  # 16 d.p.
+    additionalInterestYield: int | None  # approximation 16 d.p.
     tvlUsd: float
 
 
