@@ -107,6 +107,7 @@ Unofficial Python SDK for the [Folks Finance](https://folks.finance) v2 lending 
     - [x] `prepareCommitOrVoteTransaction`
     - [x] `prepareRemoveLiquidGovernanceEscrowTransactions`
     - [x] `prepareBurnTransactions`
+    - [x] `prepareCloseOutEscrowTransactions`
 </details>
 
 <details>

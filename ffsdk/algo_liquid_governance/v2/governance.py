@@ -2,6 +2,7 @@ import re
 import json
 from base64 import b64decode
 from algosdk.v2client.indexer import IndexerClient
+from algosdk.v2client.algod import AlgodClient
 from algosdk.encoding import encode_address, decode_address
 from algosdk.transaction import (
     LogicSigAccount,
@@ -9,6 +10,8 @@ from algosdk.transaction import (
     Transaction,
     OnComplete,
     ApplicationCloseOutTxn,
+    PaymentTxn,
+    KeyregOfflineTxn,
 )
 from algosdk.atomic_transaction_composer import (
     AtomicTransactionComposer,
@@ -568,3 +571,55 @@ def prepareBurnTransactions(
         sp=sp_fee(params, fee=3000),
     )
     return remove_signer_and_group(atc.build_group())
+
+
+def prepareCloseOutEscrowTransactions(
+    client: AlgodClient,
+    senderAddr: str,
+    params: SuggestedParams,
+) -> tuple[list[Transaction], LogicSigAccount]:
+    """
+    Returns a transaction to close out an escrow.
+
+    @param client - Algorand client to query
+    @param senderAddr - account address for the sender
+    @param params - suggested params for the transactions with the fees overwritten
+    @returns { txns: Transaction[], escrow: LogicSigAccount } object containing group transaction and generated escrow account
+    """
+    txns: list[Transaction] = []
+    escrow = getDistributorLogicSig(senderAddr)
+
+    # register offline txns if needed
+    isOnline = bool(client.account_info(escrow.address())["status"] == "Online")
+    if isOnline:
+        userPermissionToRegisterOffline = PaymentTxn(
+            senderAddr,
+            sp_fee(params, fee=2000),
+            escrow.address(),
+            0,
+            note=b"register offline",
+        )
+        registerOffline = KeyregOfflineTxn(
+            escrow.address(),
+            sp_fee(params, fee=0),
+        )
+        txns += [userPermissionToRegisterOffline, registerOffline]
+
+    # close out escrow
+    userPermissionToCloseOut = PaymentTxn(
+        senderAddr,
+        sp_fee(params, fee=2000),
+        escrow.address(),
+        0,
+        note=b"close out",
+    )
+    closeOut = PaymentTxn(
+        escrow.address(),
+        sp_fee(params, fee=0),
+        senderAddr,
+        0,
+        close_remainder_to=senderAddr,
+    )
+    txns += [userPermissionToCloseOut, closeOut]
+
+    return txns, escrow
