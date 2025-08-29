@@ -80,7 +80,7 @@ def getEscrows(
 
     for txn in removed.get("transactions"):
         sender = txn["sender"]
-        escrows.remove(sender)
+        escrows.discard(sender)
 
     return escrows
 
