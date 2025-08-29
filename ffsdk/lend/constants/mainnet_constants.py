@@ -27,7 +27,10 @@ MAINNET_DEPOSIT_STAKING_APP_ID = 1093729103
 #  | "GOLD"
 #  | "SILVER"
 #  | "OPUL"
-#  | "WMPL";
+#  | "WMPL"
+#  | "ISOLATED_ALGO"
+#  | "ISOLATED_USDC"
+#  | "ISOLATED_TINY";
 MainnetPools = {
   'ALGO': {
     'appId': 971368268,
@@ -258,6 +261,39 @@ MainnetPools = {
       971388781: int(12),
     },
   },
+  'ISOLATED_ALGO': {
+    'appId': 3184317016,
+    'assetId': 0,
+    'fAssetId': 3184331013,
+    'frAssetId': 3184331014,
+    'assetDecimals': 6,
+    'poolManagerIndex': 19,
+    'loans': {
+      3184333108: int(0),
+    },
+  },
+  'ISOLATED_USDC': {
+    'appId': 3184324594,
+    'assetId': 31566704,
+    'fAssetId': 3184331239,
+    'frAssetId': 3184331240,
+    'assetDecimals': 6,
+    'poolManagerIndex': 20,
+    'loans': {
+      3184333108: int(1),
+    },
+  },
+  'ISOLATED_TINY': {
+    'appId': 3184325123,
+    'assetId': 2200000000,
+    'fAssetId': 3184331789,
+    'frAssetId': 3184331790,
+    'assetDecimals': 6,
+    'poolManagerIndex': 21,
+    'loans': {
+      3184333108: int(2),
+    },
+  },
 }
 
 MainnetLoans = {
@@ -266,6 +302,7 @@ MainnetLoans = {
   LoanType.ALGO_EFFICIENCY: 971389489,
   LoanType.ULTRASWAP_UP: 1202382736,
   LoanType.ULTRASWAP_DOWN: 1202382829,
+  LoanType.ALGORAND_ECOSYSTEM: 3184333108,
 }
 
 MAINNET_TINYMAN_APP_ID = 1002541853

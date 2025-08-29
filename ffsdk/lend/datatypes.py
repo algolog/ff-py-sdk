@@ -338,6 +338,7 @@ class LoanType(Enum):
     ALGO_EFFICIENCY = 2
     ULTRASWAP_UP = 3
     ULTRASWAP_DOWN = 4
+    ALGORAND_ECOSYSTEM = 5
 
 
 @dataclass

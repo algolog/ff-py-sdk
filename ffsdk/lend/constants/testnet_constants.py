@@ -4,7 +4,18 @@ TESTNET_POOL_MANAGER_APP_ID = 147157634
 
 TESTNET_DEPOSITS_APP_ID = 147157692
 
-# type TestnetPoolKey = "ALGO" | "gALGO" | "xALGO" | "USDC" | "USDt" | "goBTC" | "goETH";
+
+#type TestnetPoolKey =
+#  | "ALGO"
+#  | "gALGO"
+#  | "xALGO"
+#  | "USDC"
+#  | "USDt"
+#  | "goBTC"
+#  | "goETH"
+#  | "ISOLATED_ALGO"
+#  | "ISOLATED_USDC"
+#  | "ISOLATED_TINY";
 TestnetPools = {
   'ALGO': {
     'appId': 147169673,
@@ -96,6 +107,39 @@ TestnetPools = {
       397181998: int(3),
     },
   },
+  'ISOLATED_ALGO': {
+    'appId': 744836323,
+    'assetId': 0,
+    'fAssetId': 744836632,
+    'frAssetId': 744836633,
+    'assetDecimals': 6,
+    'poolManagerIndex': 7,
+    'loans': {
+      744837086: int(0),
+    },
+  },
+  'ISOLATED_USDC': {
+    'appId': 744836375,
+    'assetId': 67395862,
+    'fAssetId': 744836668,
+    'frAssetId': 744836669,
+    'assetDecimals': 6,
+    'poolManagerIndex': 8,
+    'loans': {
+      744837086: int(1),
+    },
+  },
+  'ISOLATED_TINY': {
+    'appId': 744836793,
+    'assetId': 258703304,
+    'fAssetId': 744836820,
+    'frAssetId': 744836821,
+    'assetDecimals': 6,
+    'poolManagerIndex': 9,
+    'loans': {
+      744837086: int(2),
+    },
+  },
 }
 
 TestnetLoans = {
@@ -104,6 +148,7 @@ TestnetLoans = {
   LoanType.ALGO_EFFICIENCY: 168153622,
   LoanType.ULTRASWAP_UP: 397181473,
   LoanType.ULTRASWAP_DOWN: 397181998,
+  LoanType.ALGORAND_ECOSYSTEM: 744837086,
 }
 
 TESTNET_RESERVE_ADDRESS = "KLF3MEIIHMTA7YHNPLBDVHLN2MVC27X5M7ULTDZLMEX5XO5XCUP7HGBHMQ"
