@@ -30,4 +30,4 @@ for ltype in LoanType:
         user_address,
     )
     for loan in userLoansInfo:
-        user_loan_report(loan, ltype, client.pools)
+        user_loan_report(loan, ltype, client.lending_config)

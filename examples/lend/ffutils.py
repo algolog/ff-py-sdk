@@ -6,6 +6,7 @@ from ffsdk.lend.datatypes import (
     UserDepositFullInfo,
     UserDepositStakingInfo,
     UserLoanInfo,
+    LendingConfig,
 )
 from ffsdk.lend.loan import getUserLoanAssets
 from ffsdk.mathlib import ONE_4_DP, ONE_14_DP
@@ -99,8 +100,10 @@ def user_staking_report(udsi: UserDepositStakingInfo, pools: dict[str, Pool]):
     print("~" * SEP)
 
 
-def user_loan_report(loan: UserLoanInfo, ltype: LoanType, pools: dict[str, Pool]):
-    pool_by_asset = {pool.assetId: name for name, pool in pools.items()}
+def user_loan_report(loan: UserLoanInfo, ltype: LoanType, lending_config: LendingConfig):
+    pools = lending_config.pools
+    loan_app_id = lending_config.loans[ltype]
+    pool_by_asset = {pool.assetId: name for name, pool in pools.items() if loan_app_id in pool.loans}
     borrows_by_asset = {b.assetId: b for b in loan.borrows}
     collaterals_by_asset = {c.assetId: c for c in loan.collaterals}
     SEP = 91

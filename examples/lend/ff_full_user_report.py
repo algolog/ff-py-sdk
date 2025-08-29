@@ -43,7 +43,6 @@ client = FFMainnetClient(algod, indexer).lending
 pmi = retrievePoolManagerInfo(client.indexer, client.pool_manager_app_id)
 oracle_prices = getOraclePrices(client.indexer, client.oracle)
 pool_by_id = {pool.appId: name for name, pool in client.pools.items()}
-pool_by_asset = {pool.assetId: name for name, pool in client.pools.items()}
 user_address = args.user_address
 print(f"account: {user_address}")
 
@@ -86,4 +85,4 @@ for ltype in loan_types:
         user_address,
     )
     for loan in userLoansInfo:
-        user_loan_report(loan, ltype, client.pools)
+        user_loan_report(loan, ltype, client.lending_config)

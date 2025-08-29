@@ -33,7 +33,6 @@ client = FFMainnetClient(algod, indexer).lending
 pmi = retrievePoolManagerInfo(client.indexer, client.pool_manager_app_id)
 oracle_prices = getOraclePrices(client.indexer, client.oracle)
 market_by_id = {pool.appId: name for name, pool in client.pools.items()}
-pool_by_asset = {pool.assetId: name for name, pool in client.pools.items()}
 
 escrow = args.escrow_address
 
@@ -54,7 +53,7 @@ user_address = loan.userAddress
 
 # print report
 print(f"addres: {user_address}")
-user_loan_report(loan, ltype, client.pools)
+user_loan_report(loan, ltype, client.lending_config)
 
 # configure optin
 print("Markets:", *client.pools.keys())
