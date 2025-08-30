@@ -22,7 +22,7 @@ class FolksRouterClient:
         url = BASE_URL
         if network == Network.TESTNET:
             url += "/testnet"
-        url += "/v1"
+        url += "/v2"
         if api_key is not None:
             url += "/pro"
 
@@ -32,11 +32,24 @@ class FolksRouterClient:
         self.api = requests.Session()
         self.api.headers.update({"x-api-key": api_key})
 
+    def fetchUserDiscount(self, userAddress: str) -> int:
+        r = self.api.get(
+            self.url + "/fetch/discount",
+            params={
+                "network": self.network,
+                "userAddress": userAddress,
+            },
+        )
+        r.raise_for_status()
+        data = r.json()["result"]
+        return data
+
     def fetchSwapQuote(
         self,
         params: SwapParams,
         maxGroupSize: int | None = None,
         feeBps: int | None = None,
+        userFeeDiscount: int | None = None,
         referrer: str | None = None,
     ) -> SwapQuote:
         fromAssetId, toAssetId, amount, swapMode = astuple(params)
@@ -51,6 +64,7 @@ class FolksRouterClient:
                 "type": swapMode.value,
                 "maxGroupSize": maxGroupSize,
                 "feeBps": feeBps,
+                "userFeeDiscount": userFeeDiscount,
                 "referrer": referrer,
             },
         )
