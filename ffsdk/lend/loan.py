@@ -12,6 +12,7 @@ from algosdk.atomic_transaction_composer import (
 )
 from algosdk.logic import get_application_address
 from algosdk.account import generate_account
+from algosdk.encoding import encode_address
 from .utils import getEscrows, loanLocalState, userLoanInfo
 from ..mathlib import divScale, mulScale, ONE_4_DP, ONE_10_DP
 from .formulae import (
@@ -62,6 +63,9 @@ def retrieveLoanInfo(client: IndexerClient, loanAppId: int) -> LoanInfo:
 
     paramsBase64Value = state.get("pa")
     paramsValue = b64decode(paramsBase64Value).hex()
+    adminAddress = encode_address(b64decode(paramsBase64Value)[0:32])
+    poolManagerAppId = int(paramsValue[64:80], base=16)
+    oracleAdapterAppId = int(paramsValue[80:96], base=16)
     canSwapCollateral = bool(int(paramsValue[96:98], base=16))
 
     pools: dict[int, PoolLoanInfo] = {}
@@ -91,7 +95,9 @@ def retrieveLoanInfo(client: IndexerClient, loanAppId: int) -> LoanInfo:
                 )
 
     # combine
-    return LoanInfo(canSwapCollateral, pools)
+    return LoanInfo(
+        adminAddress, poolManagerAppId, oracleAdapterAppId, canSwapCollateral, pools
+    )
 
 
 def retrieveLoansLocalState(

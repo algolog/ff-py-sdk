@@ -116,6 +116,7 @@ class PoolStateFromManager:
 
 @dataclass
 class PoolManagerInfo:
+    adminAddress: str
     pools: dict[int, PoolStateFromManager]  # poolAppId -> ...
 
 
@@ -185,6 +186,11 @@ class PoolInfo_Config:
 
 @dataclass
 class PoolInfo:
+    poolManagerAppId: int
+    poolAdminAddress: str
+    paramsAdminAddress: str
+    configAdminAddress: str
+    loansAdminAddress: str
     variableBorrow: PoolInfo_VariableBorrow
     stableBorrow: PoolInfo_StableBorrow
     interest: PoolInfo_Interest
@@ -343,6 +349,9 @@ class LoanType(Enum):
 
 @dataclass
 class LoanInfo:
+    adminAddress: str
+    poolManagerAppId: int
+    oracleAdapterAppId: int
     canSwapCollateral: bool
     pools: dict[int, PoolLoanInfo]  # poolAppId -> PoolLoanInfo
 

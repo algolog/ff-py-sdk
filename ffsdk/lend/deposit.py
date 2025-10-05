@@ -9,6 +9,7 @@ from algosdk.transaction import (
 )
 from algosdk.logic import get_application_address
 from algosdk.account import generate_account
+from algosdk.encoding import encode_address
 from algosdk.atomic_transaction_composer import (
     AtomicTransactionComposer,
     TransactionWithSigner,
@@ -75,6 +76,8 @@ def retrievePoolManagerInfo(
     """
 
     state = get_global_state(indexerClient, poolManagerAppId)
+    adminAddress = encode_address(b64decode(state.get("admin")))
+
     pools = {}
     for i in range(63):
         poolBase64Value = state.get(i.to_bytes(1, "big").decode())
@@ -111,7 +114,7 @@ def retrievePoolManagerInfo(
                     ),
                 )
 
-    return PoolManagerInfo(pools)
+    return PoolManagerInfo(adminAddress, pools)
 
 
 def retrievePoolInfo(indexerClient: IndexerClient, pool: Pool) -> PoolInfo:
@@ -125,6 +128,11 @@ def retrievePoolInfo(indexerClient: IndexerClient, pool: Pool) -> PoolInfo:
 
     state = get_global_state(indexerClient, pool.appId)
 
+    poolManagerAppId = int.from_bytes(b64decode(state.get("pm"))[0:8], byteorder="big")
+    poolAdminAddress = encode_address(b64decode(state.get("ad")))
+    paramsAdminAddress = encode_address(b64decode(state.get("pad")))
+    configAdminAddress = encode_address(b64decode(state.get("cad")))
+    loansAdminAddress = encode_address(b64decode(state.get("lad")))
     varBor = parse_uint64s(state.get("v"))
     stblBor = parse_uint64s(state.get("s"))
     interest = parse_uint64s(state.get("i"))
@@ -133,6 +141,11 @@ def retrievePoolInfo(indexerClient: IndexerClient, pool: Pool) -> PoolInfo:
 
     # combine
     return PoolInfo(
+        poolManagerAppId=poolManagerAppId,
+        poolAdminAddress=poolAdminAddress,
+        paramsAdminAddress=paramsAdminAddress,
+        configAdminAddress=configAdminAddress,
+        loansAdminAddress=loansAdminAddress,
         variableBorrow=PoolInfo_VariableBorrow(
             vr0=varBor[0],
             vr1=varBor[1],
