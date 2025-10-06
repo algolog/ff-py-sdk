@@ -71,6 +71,9 @@ def getConsensusState(
     ]
 
     # global state
+    adminAddress = encode_address(b64decode(state.get("admin")))
+    registerAdminAddress = encode_address(b64decode(state.get("register_admin")))
+    xGovAdminAddress = encode_address(b64decode(state.get("xgov_admin")))
     timeDelay = int(state.get("time_delay", 0))
     numProposers = int(state.get("num_proposers", 0))
     maxProposerBalance = int(state.get("max_proposer_balance", 0))
@@ -87,6 +90,9 @@ def getConsensusState(
         algoBalance,
         xAlgoCirculatingSupply,
         proposersBalances,
+        adminAddress,
+        registerAdminAddress,
+        xGovAdminAddress,
         timeDelay,
         numProposers,
         maxProposerBalance,

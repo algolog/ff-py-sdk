@@ -20,6 +20,9 @@ class ConsensusState:
     algoBalance: int
     xAlgoCirculatingSupply: int
     proposersBalances: list[ProposerBalance]
+    adminAddress: str
+    registerAdminAddress: str
+    xGovAdminAddress: str
     timeDelay: int
     numProposers: int
     maxProposerBalance: int
