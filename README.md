@@ -129,6 +129,7 @@ Unofficial Python SDK for the [Folks Finance](https://folks.finance) v2 lending 
 <details>
 <summary>Folks Router</summary>
 
+  - [x] `fetchUserDiscount`
   - [x] `fetchSwapQuote`
   - [x] `prepareSwapTransactions`
   - [x] `getReferrerLogicSig`
