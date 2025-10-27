@@ -42,6 +42,8 @@ def checkSwapTransactions(
     # send algo/asset
     if sendAssetTxn.rekey_to is not None:
         raise ValueError("Unexpected rekey")
+    if sendAssetTxn.sender != userAddress:
+        raise ValueError("Incorrect sender")
     if sendAssetTxn.receiver != folksRouterAddr:
         raise ValueError("Incorrect receiver")
 
@@ -63,6 +65,8 @@ def checkSwapTransactions(
     # swap forward txns
     SWAP_FORWARD_SELECTOR = getHexSelector("swap_forward")
     for txn in swapForwardTxns:
+        if txn.sender != userAddress:
+            raise ValueError("Incorrect sender (swap_forward)")
         if not (txn.type == APPCALL_TXN and txn.on_complete == OnComplete.NoOpOC):
             raise ValueError("Incorrect transaction type")
         if txn.index != folksRouterAppId:
@@ -71,6 +75,8 @@ def checkSwapTransactions(
             raise ValueError("Incorrect selector")
 
     # receive algo/asset
+    if swapEndTxn.sender != userAddress:
+        raise ValueError("Incorrect sender (end_swap)")
     if not (
         swapEndTxn.type == APPCALL_TXN
         and swapEndTxn.on_complete == OnComplete.NoOpOC
