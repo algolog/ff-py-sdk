@@ -30,7 +30,8 @@ MAINNET_DEPOSIT_STAKING_APP_ID = 1093729103
 #  | "WMPL"
 #  | "ISOLATED_ALGO"
 #  | "ISOLATED_USDC"
-#  | "ISOLATED_TINY";
+#  | "ISOLATED_TINY"
+#  | "ISOLATED_FOLKS";
 MainnetPools = {
   'ALGO': {
     'appId': 971368268,
@@ -292,6 +293,17 @@ MainnetPools = {
     'poolManagerIndex': 21,
     'loans': {
       3184333108: int(2),
+    },
+  },
+  'ISOLATED_FOLKS': {
+    'appId': 3343137163,
+    'assetId': 3203964481,
+    'fAssetId': 3343139268,
+    'frAssetId': 3343139269,
+    'assetDecimals': 6,
+    'poolManagerIndex': 22,
+    'loans': {
+      3184333108: int(3),
     },
   },
 }
