@@ -71,7 +71,7 @@ Unofficial Python SDK for the [Folks Finance](https://folks.finance) v2 lending 
     - [ ] `getTinymanLPPrice`
     - [ ] `getPactLPPrice`
     - [x] `getOraclePrices` (partial, without LP tokens)
-    - [x] `prepareRefreshPricesInOracleAdapter` (partial, without LPPools oracle update)
+    - [x] `prepareRefreshPricesInOracleAdapter`
 
 * Utils
     - [x] `getEscrows`

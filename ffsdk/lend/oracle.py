@@ -88,64 +88,10 @@ def prepareRefreshPricesInOracleAdapter(
     lpTokenOracle = oracle.lpTokenOracle
     oracle0AppId = oracle.oracle0AppId
 
-    if lpTokenOracle is None and len(lpAssets) > 0:
-        raise ValueError("Cannot refresh LP assets without LP Token Oracle")
+    if len(lpAssets) > 0:
+        raise ValueError("Refresh LP assets unsupported")
 
     atc = AtomicTransactionComposer()
-
-    # TODO: LPPools oracle update
-    #    # divide lp tokens into Tinyman and Pact
-    #    const tinymanLPAssets: TinymanLPToken[] = lpAssets.filter(
-    #      ({ provider }) => provider === LPTokenProvider.TINYMAN,
-    #    ) as TinymanLPToken[];
-    #    const pactLPAssets: PactLPToken[] = lpAssets.filter(
-    #      ({ provider }) => provider === LPTokenProvider.PACT,
-    #    ) as PactLPToken[];
-    #
-    #    # update lp tokens
-    #    const foreignAccounts: string[][] = [];
-    #    const foreignApps: number[][] = [];
-    #
-    #    const MAX_TINYMAN_UPDATE = 4;
-    #    const MAX_PACT_UPDATE = 8;
-    #    const MAX_COMBINATION_UPDATE = 7;
-    #    let tinymanIndex = 0;
-    #    let pactIndex = 0;
-    #
-    #    while (tinymanIndex < tinymanLPAssets.length && pactIndex < pactLPAssets.length) {
-    #      # retrieve which lp assets to update
-    #      const tinymanLPUpdates = tinymanLPAssets.slice(tinymanIndex, tinymanIndex + MAX_TINYMAN_UPDATE);
-    #      const maxPactUpdates =
-    #        tinymanLPUpdates.length === 0 ? MAX_PACT_UPDATE : MAX_COMBINATION_UPDATE - tinymanLPUpdates.length;
-    #      const pactLPUpdates = pactLPAssets.slice(pactIndex, pactIndex + maxPactUpdates);
-    #
-    #      // prepare update lp tokens arguments
-    #      const lpAssetIds = [
-    #        ...tinymanLPUpdates.map(({ lpAssetId }) => lpAssetId),
-    #        ...pactLPUpdates.map(({ lpAssetId }) => lpAssetId),
-    #      ];
-    #
-    #      # foreign arrays
-    #      foreignAccounts.push(tinymanLPUpdates.map(({ lpPoolAddress }) => lpPoolAddress));
-    #      const apps: number[] = [];
-    #      if (tinymanLPUpdates.length > 0) apps.push(lpTokenOracle!.tinymanValidatorAppId);
-    #      pactLPUpdates.forEach(({ lpPoolAppId }) => apps.push(lpPoolAppId));
-    #      foreignApps.push(apps);
-    #
-    #      # update lp
-    #      atc.addMethodCall({
-    #        sender: userAddr,
-    #        signer,
-    #        appID: lpTokenOracle!.appId,
-    #        method: getMethodByName(lpTokenOracleABIContract.methods, "update_lp_tokens"),
-    #        methodArgs: [lpAssetIds],
-    #        suggestedParams: { ...params, flatFee: true, fee: 1000 },
-    #      });
-    #
-    #      # increase indexes
-    #      tinymanIndex += tinymanLPUpdates.length;
-    #      pactIndex += pactLPUpdates.length;
-    #    }
 
     # prepare refresh prices arguments
     oracle1AppId = oracle.oracle1AppId if oracle.oracle1AppId else 0
@@ -168,15 +114,5 @@ def prepareRefreshPricesInOracleAdapter(
         ],
     )
 
-    # TODO: LPPools oracle update
-    #    # build
-    #    return atc.buildGroup().map(({ txn }, index) => {
-    #      if (index < foreignAccounts.length && index < foreignApps.length) {
-    #        txn.appAccounts = foreignAccounts[index].map((address) => decodeAddress(address));
-    #        txn.appForeignApps = foreignApps[index];
-    #      }
-    #      txn.group = undefined;
-    #      return txn;
-    #    });
-
+    # build
     return remove_signer_and_group(atc.build_group())

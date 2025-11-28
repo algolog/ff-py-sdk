@@ -8,4 +8,4 @@ from . import transaction_utils
 from . import mathlib
 
 # metadata
-__version__ = "0.3.10"
+__version__ = "0.3.11"
