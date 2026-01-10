@@ -12,6 +12,18 @@ class ReferrerTransaction:
 ReferrerGroupTransaction = list[ReferrerTransaction]
 
 
+@dataclass
+class Tier:
+    amount: int
+    discount: float  # 0 d.p. (20=20%)
+
+
+@dataclass
+class DiscountTiers:
+    assetId: int
+    tiers: list[Tier]
+
+
 class SwapMode(Enum):
     FIXED_INPUT = "FIXED_INPUT"
     FIXED_OUTPUT = "FIXED_OUTPUT"

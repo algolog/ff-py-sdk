@@ -1,7 +1,7 @@
 from ffsdk.config import Network
 from algosdk.encoding import msgpack_decode
 from dataclasses import astuple
-from .datatypes import SwapParams, SwapQuote, SwapTransactions
+from .datatypes import DiscountTiers, SwapParams, SwapQuote, SwapTransactions, Tier
 from .checks import checkSwapTransactions
 import requests
 
@@ -25,6 +25,22 @@ class FolksRouterClient:
         self.url = url
         self.api = requests.Session()
         self.api.headers.update({"x-api-key": api_key})
+
+    def fetchDiscountTiers(self) -> DiscountTiers:
+        r = self.api.get(
+            self.url + "/fetch/tiers",
+            params={
+                "network": self.network,
+            },
+        )
+        r.raise_for_status()
+
+        data = r.json()["result"]
+
+        return DiscountTiers(
+            data["assetId"],
+            [Tier(int(t["amount"]), float(t["discount"])) for t in data["tiers"]],
+        )
 
     def fetchUserDiscount(self, userAddress: str) -> int:
         r = self.api.get(
