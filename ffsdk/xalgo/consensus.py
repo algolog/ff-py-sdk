@@ -110,6 +110,8 @@ def prepareDummyTransaction(
     consensusConfig: ConsensusConfig,
     senderAddr: str,
     params: SuggestedParams,
+    foreignAccounts: list[str] | None = None,
+    boxes: list[(int, bytes)] | None = None,
 ) -> Transaction:
     atc = AtomicTransactionComposer()
     atc.add_method_call(
@@ -118,6 +120,8 @@ def prepareDummyTransaction(
         app_id=consensusConfig.consensusAppId,
         method=xAlgoABIContract.get_method_by_name("dummy"),
         method_args=[],
+        accounts=foreignAccounts,
+        boxes=boxes,
         sp=sp_fee(params, fee=1000),
     )
     txns = remove_signer_and_group(atc.build_group())
@@ -313,10 +317,15 @@ def prepareImmediateStakeAndDepositTransactions(
     MAX_FOREIGN_ACCOUNT_PER_TXN = 4
     accounts = [proposer.address for proposer in consensusState.proposersBalances]
     for i in range(0, len(accounts), MAX_FOREIGN_ACCOUNT_PER_TXN):
-        txns.insert(0, prepareDummyTransaction(consensusConfig, senderAddr, params))
-        txns[0].accounts = accounts[i : i + 4]
+        boxes = [(consensusAppId, b"pr")] if i == 0 else None
+        foreignAccounts = accounts[i : i + 4]
+        txns.insert(
+            0,
+            prepareDummyTransaction(
+                consensusConfig, senderAddr, params, foreignAccounts, boxes
+            ),
+        )
 
-    add_box_to_appcall(txns[0], (consensusAppId, b"pr"))
     return txns
 
 
