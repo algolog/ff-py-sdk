@@ -4,11 +4,16 @@ from ffsdk.lend.datatypes import Account
 from ffsdk.router.client import FolksRouterClient
 from ffsdk.router.datatypes import SwapMode, SwapParams
 from algosdk.encoding import msgpack_decode
+from algosdk.atomic_transaction_composer import (
+    AccountTransactionSigner,
+    sign_transaction_with_signer,
+)
 from base64 import b64decode
 import json
 
 
 USER_ACCOUNT = Account(addr="", sk="")
+user_signer = AccountTransactionSigner(USER_ACCOUNT.sk)
 client = FolksRouterClient(Network.MAINNET)
 
 USDT = 312769
@@ -40,7 +45,7 @@ print(f"N_swaps: {n_swaps}")
 fee_bps = 10  # 0.1%
 base64_txns = client.prepareSwapTransactions(swap_params, USER_ACCOUNT.addr, fee_bps, quote)
 unsigned_txns = [msgpack_decode(txn) for txn in base64_txns]
-signed_txns = [txn.sign(USER_ACCOUNT.sk) for txn in unsigned_txns]
+signed_txns = [sign_transaction_with_signer(txn, user_signer) for txn in unsigned_txns]
 print(f"N_txns: {len(unsigned_txns)}")
 
 # submit

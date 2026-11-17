@@ -2,6 +2,7 @@ from algosdk.transaction import Transaction, SuggestedParams, ApplicationNoOpTxn
 from algosdk.encoding import encode_as_bytes
 from .datatypes import OpUp
 from ..transaction_utils import sp_fee
+from ..config import MIN_FEE, USER_TXN_FEE
 
 
 def prefixWithOpUp(
@@ -30,7 +31,7 @@ def prefixWithOpUp(
     callerAppId = opup.callerAppId
     baseAppId = opup.baseAppId
 
-    fee = (numInnerTransactions + 1) * 1000
+    fee = USER_TXN_FEE + numInnerTransactions * MIN_FEE
     prefix = ApplicationNoOpTxn(
         userAddr,
         sp_fee(params, fee, flat_fee=True),

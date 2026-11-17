@@ -1,6 +1,7 @@
 from ffsdk.client import FFMainnetClient
 from algosdk.v2client.algod import AlgodClient
 from algosdk.transaction import assign_group_id, write_to_file
+from algosdk.atomic_transaction_composer import AccountTransactionSigner
 from ffsdk.state_utils import AlgodIndexerCombo
 from ffsdk.lend.datatypes import Account
 from ffsdk.lend.deposit import (
@@ -24,6 +25,7 @@ from decimal import Decimal
 import argparse
 
 USER_ACCOUNT = Account(addr="", sk="")
+user_signer = AccountTransactionSigner(USER_ACCOUNT.sk)
 
 parser = argparse.ArgumentParser(description="Deposit into deposit staking escrow")
 parser.add_argument("escrow_address")
@@ -122,4 +124,4 @@ unsigned_txns = prefixWithOpUp(client.opup, sender, unsigned_txns, opup_budget, 
 txn_group = assign_group_id(unsigned_txns)
 #write_to_file(txn_group, '_ff_staking_deposit.txns')
 
-ask_sign_and_send(algod, txn_group, USER_ACCOUNT.sk)
+ask_sign_and_send(algod, txn_group, user_signer)

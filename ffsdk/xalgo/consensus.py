@@ -16,7 +16,11 @@ from ..transaction_utils import (
     remove_signer_and_group,
     transferAlgoOrAsset,
 )
-from ..config import PAYOUTS_GO_ONLINE_FEE
+from ..config import (
+    PAYOUTS_GO_ONLINE_FEE,
+    MIN_FEE,
+    USER_TXN_FEE,
+)
 from ..state_utils import get_global_state, get_application_box, parse_uint64s
 from .constants.mainnet_constants import MAINNET_RESERVE_ADDRESS
 from .abi_contracts import xAlgoABIContract, stakeAndDepositABIContract
@@ -122,7 +126,7 @@ def prepareDummyTransaction(
         method_args=[],
         accounts=foreignAccounts,
         boxes=boxes,
-        sp=sp_fee(params, fee=1000),
+        sp=sp_fee(params, fee=USER_TXN_FEE),
     )
     txns = remove_signer_and_group(atc.build_group())
     return txns[0]
@@ -219,9 +223,9 @@ def prepareImmediateStakeTransactions(
         senderAddr,
         get_application_address(consensusAppId),
         amount,
-        sp_fee(params, fee=0),
+        sp_fee(params, fee=USER_TXN_FEE),
     )
-    fee = 1000 * (3 + len(consensusState.proposersBalances))
+    fee = USER_TXN_FEE + MIN_FEE * (1 + len(consensusState.proposersBalances))
 
     atc = AtomicTransactionComposer()
     atc.add_method_call(
@@ -287,9 +291,9 @@ def prepareImmediateStakeAndDepositTransactions(
         senderAddr,
         get_application_address(stakeAndDepositAppId),
         amount,
-        sp_fee(params, fee=0),
+        sp_fee(params, fee=USER_TXN_FEE),
     )
-    fee = 1000 * (9 + len(consensusState.proposersBalances))
+    fee = USER_TXN_FEE + MIN_FEE * (7 + len(consensusState.proposersBalances))
 
     atc = AtomicTransactionComposer()
     atc.add_method_call(
@@ -365,9 +369,9 @@ def prepareDelayedStakeTransactions(
         senderAddr,
         get_application_address(consensusAppId),
         amount,
-        sp_fee(params, fee=0),
+        sp_fee(params, fee=USER_TXN_FEE),
     )
-    fee = 1000 * (2 + len(consensusState.proposersBalances))
+    fee = USER_TXN_FEE + MIN_FEE * len(consensusState.proposersBalances)
 
     atc = AtomicTransactionComposer()
     boxName = b"dm" + decode_address(senderAddr) + nonce
@@ -393,7 +397,11 @@ def prepareDelayedStakeTransactions(
     if includeBoxMinBalancePayment:
         minBalance = 36100
         appAddr = get_application_address(consensusAppId)
-        txns = [transferAlgoOrAsset(0, senderAddr, appAddr, minBalance, params)] + txns
+        txns = [
+            transferAlgoOrAsset(
+                0, senderAddr, appAddr, minBalance, sp_fee(params, fee=USER_TXN_FEE)
+            )
+        ] + txns
 
     return txns
 
@@ -431,7 +439,7 @@ def prepareClaimDelayedStakeTransactions(
         method=xAlgoABIContract.get_method_by_name("claim_delayed_mint"),
         method_args=[minterAddr, nonce],
         boxes=[(consensusAppId, boxName)],
-        sp=sp_fee(params, fee=3000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + 2 * MIN_FEE),
     )
 
     # allocate resources
@@ -472,9 +480,9 @@ def prepareUnstakeTransactions(
         senderAddr,
         get_application_address(consensusAppId),
         amount,
-        sp_fee(params, fee=0),
+        sp_fee(params, fee=USER_TXN_FEE),
     )
-    fee = 1000 * (3 + len(consensusState.proposersBalances))
+    fee = USER_TXN_FEE + MIN_FEE * (1 + len(consensusState.proposersBalances))
 
     atc = AtomicTransactionComposer()
     atc.add_method_call(
@@ -517,7 +525,7 @@ def prepareClaimConsensusFeesTransactions(
     """
     consensusAppId = consensusConfig.consensusAppId
 
-    fee = 1000 * (2 + len(consensusState.proposersBalances))
+    fee = USER_TXN_FEE + MIN_FEE * (1 + len(consensusState.proposersBalances))
 
     atc = AtomicTransactionComposer()
     atc.add_method_call(
@@ -570,7 +578,7 @@ def prepareSetProposerAdminTransaction(
             (consensusAppId, b"pr"),
             (consensusAppId, b"ap" + decode_address(proposerAddr)),
         ],
-        sp=sp_fee(params, fee=1000),
+        sp=sp_fee(params, fee=USER_TXN_FEE),
     )
     txns = remove_signer_and_group(atc.build_group())
     return txns[0]
@@ -610,7 +618,11 @@ def prepareRegisterProposerOnlineTransactions(
     proposerIndex = getProposerIndex(consensusState, proposerAddr)
 
     sendAlgo = transferAlgoOrAsset(
-        0, senderAddr, proposerAddr, PAYOUTS_GO_ONLINE_FEE, sp_fee(params, fee=0)
+        0,
+        senderAddr,
+        proposerAddr,
+        PAYOUTS_GO_ONLINE_FEE,
+        sp_fee(params, fee=USER_TXN_FEE),
     )
 
     atc = AtomicTransactionComposer()
@@ -634,7 +646,7 @@ def prepareRegisterProposerOnlineTransactions(
             (consensusAppId, b"pr"),
             (consensusAppId, b"ap" + decode_address(proposerAddr)),
         ],
-        sp=sp_fee(params, fee=3000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + MIN_FEE),
     )
     return remove_signer_and_group(atc.build_group())
 
@@ -672,7 +684,7 @@ def prepareRegisterProposerOfflineTransaction(
             (consensusAppId, b"pr"),
             (consensusAppId, b"ap" + decode_address(proposerAddr)),
         ],
-        sp=sp_fee(params, fee=2000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + MIN_FEE),
     )
 
     txns = remove_signer_and_group(atc.build_group())

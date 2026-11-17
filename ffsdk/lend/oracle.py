@@ -7,6 +7,7 @@ from .datatypes import Oracle, OraclePrice, OraclePrices, LPToken
 from .abi_contracts import oracleAdapterABIContract
 from ..state_utils import get_global_state
 from ..transaction_utils import sp_fee, signer, remove_signer_and_group
+from ..config import USER_TXN_FEE
 
 
 def parseOracleValue(base64Value: str) -> OraclePrice:
@@ -103,7 +104,7 @@ def prepareRefreshPricesInOracleAdapter(
         app_id=oracleAdapterAppId,
         method=oracleAdapterABIContract.get_method_by_name("refresh_prices"),
         sender=userAddr,
-        sp=sp_fee(params, fee=1000),
+        sp=sp_fee(params, fee=USER_TXN_FEE),
         signer=signer,
         method_args=[
             lpAssetIds,

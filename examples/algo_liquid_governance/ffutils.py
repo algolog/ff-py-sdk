@@ -1,20 +1,24 @@
 from algosdk.v2client.algod import AlgodClient
 from algosdk.transaction import Transaction, write_to_file, wait_for_confirmation
+from algosdk.atomic_transaction_composer import (
+    TransactionSigner,
+    sign_transaction_with_signer,
+)
 
 
 def ask_sign_and_send(
     algod: AlgodClient,
     txn_group: list[Transaction],
-    sk: str,
-    extra_sign=None,
-    simulate=False,
+    signer: TransactionSigner,
+    extra_sign: dict[TransactionSigner, list[int]] | None = None,
+    simulate: bool = False,
 ):
     """Ask user permission to proceed, sign and send transaction group.
 
     :param algod: Algod client
     :param txn_group: transaction group to sign and send
-    :param sk: secret key for signing transactions
-    :param extra_sign: dict[int, str], optional dictionary transaction_number->secret_key for
+    :param signer: transactions signer
+    :param extra_sign: optional map signer->txn_idx_list for
                        signing some of the transactions with another key(s)
     :param simulate: bool, simulate transactions instead of sending (default: False)
     """
@@ -26,10 +30,14 @@ def ask_sign_and_send(
         print("Sending  transaction...")
 
         # Sign the group
-        signed_txns = [txn.sign(sk) for txn in txn_group]
+        signed_txns = [sign_transaction_with_signer(txn, signer) for txn in txn_group]
         if extra_sign is not None:
-            for n in extra_sign:
-                signed_txns[n] = signed_txns[n].transaction.sign(extra_sign[n])
+            # Re-sign some txns with another signer
+            for other_signer, indexes in extra_sign.items():
+                for n in indexes:
+                    signed_txns[n] = sign_transaction_with_signer(
+                        txn_group[n], other_signer
+                    )
 
         if simulate:
             res = algod.simulate_raw_transactions(signed_txns)

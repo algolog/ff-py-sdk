@@ -1,6 +1,7 @@
 from ffsdk.client import FFMainnetClient
 from algosdk.v2client.algod import AlgodClient
 from algosdk.transaction import assign_group_id
+from algosdk.atomic_transaction_composer import AccountTransactionSigner
 from ffsdk.state_utils import AlgodIndexerCombo
 from ffsdk.lend.datatypes import Account
 from ffsdk.lend.deposit import retrievePoolManagerInfo
@@ -23,6 +24,7 @@ from fractions import Fraction
 import argparse
 
 USER_ACCOUNT = Account(addr="", sk="")
+user_signer = AccountTransactionSigner(USER_ACCOUNT.sk)
 
 parser = argparse.ArgumentParser(description="Withdraw from deposit staking escrow")
 parser.add_argument("escrow_address")
@@ -121,4 +123,4 @@ unsigned_txns = prefixWithOpUp(client.opup, sender, unsigned_txns, opup_budget, 
 # Prepare a transaction group
 txn_group = assign_group_id(unsigned_txns)
 
-ask_sign_and_send(algod, txn_group, USER_ACCOUNT.sk)
+ask_sign_and_send(algod, txn_group, user_signer)

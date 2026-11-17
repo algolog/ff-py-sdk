@@ -1,5 +1,9 @@
 from algosdk.v2client.algod import AlgodClient
 from algosdk.transaction import Transaction, write_to_file, wait_for_confirmation
+from algosdk.atomic_transaction_composer import (
+    TransactionSigner,
+    sign_transaction_with_signer,
+)
 from ffsdk.lend.datatypes import (
     Pool,
     LoanType,
@@ -12,28 +16,38 @@ from ffsdk.lend.loan import getUserLoanAssets
 from ffsdk.mathlib import ONE_4_DP, ONE_14_DP
 
 
-def ask_sign_and_send(algod: AlgodClient, txn_group: list[Transaction], sk: str, extra_sign=None, simulate=False):
+def ask_sign_and_send(
+    algod: AlgodClient,
+    txn_group: list[Transaction],
+    signer: TransactionSigner,
+    extra_sign: dict[TransactionSigner, list[int]] | None = None,
+    simulate: bool = False,
+):
     """Ask user permission to proceed, sign and send transaction group.
 
     :param algod: Algod client
     :param txn_group: transaction group to sign and send
-    :param sk: secret key for signing transactions
-    :param extra_sign: dict[int, str], optional dictionary transaction_number->secret_key for
+    :param signer: transactions signer
+    :param extra_sign: optional map signer->txn_idx_list for
                        signing some of the transactions with another key(s)
     :param simulate: bool, simulate transactions instead of sending (default: False)
     """
 
-    proceed_ask = input('Proceed (y/N)?: ').lower()
-    do_proceed = True if proceed_ask in ['y', 'yes'] else False
+    proceed_ask = input("Proceed (y/N)?: ").lower()
+    do_proceed = True if proceed_ask in ["y", "yes"] else False
 
     if do_proceed:
-        print('Sending  transaction...')
+        print("Sending  transaction...")
 
         # Sign the group
-        signed_txns = [txn.sign(sk) for txn in txn_group]
+        signed_txns = [sign_transaction_with_signer(txn, signer) for txn in txn_group]
         if extra_sign is not None:
-            for n in extra_sign:
-                signed_txns[n] = signed_txns[n].transaction.sign(extra_sign[n])
+            # Re-sign some txns with another signer
+            for other_signer, indexes in extra_sign.items():
+                for n in indexes:
+                    signed_txns[n] = sign_transaction_with_signer(
+                        txn_group[n], other_signer
+                    )
 
         if simulate:
             res = algod.simulate_raw_transactions(signed_txns)
@@ -103,14 +117,16 @@ def user_staking_report(udsi: UserDepositStakingInfo, pools: dict[str, Pool]):
 def user_loan_report(loan: UserLoanInfo, ltype: LoanType, lending_config: LendingConfig):
     pools = lending_config.pools
     loan_app_id = lending_config.loans[ltype]
-    pool_by_asset = {pool.assetId: name for name, pool in pools.items() if loan_app_id in pool.loans}
+    pool_by_asset = {
+        pool.assetId: name for name, pool in pools.items() if loan_app_id in pool.loans
+    }
     borrows_by_asset = {b.assetId: b for b in loan.borrows}
     collaterals_by_asset = {c.assetId: c for c in loan.collaterals}
-    SEP = 91
+    SEP = 113
     print(f"loan escrow: {loan.escrowAddress}  {ltype.name}")
     print("~" * SEP)
     print(
-        "Market     Factor   Collateral_balance     $Collateral       Borrow_balance         $Borrow"
+        "Market           cAPY%   bAPY%   Factor   Collateral_balance     $Collateral       Borrow_balance         $Borrow"
     )
     print("~" * SEP)
     # get assets in user loan
@@ -125,20 +141,24 @@ def user_loan_report(loan: UserLoanInfo, ltype: LoanType, lending_config: Lendin
             factor = collateral.collateralFactor / ONE_4_DP
             collateral_balance = collateral.assetBalance
             collateral_usd = collateral.balanceValue / ONE_4_DP
+            collateral_apy = collateral.interestYield / ONE_14_DP
         else:
             factor = 0
             collateral_balance = 0
             collateral_usd = 0
+            collateral_apy = 0
 
         borrow = borrows_by_asset.get(asset_id, None)
         if borrow:
             borrow_balance = borrow.borrowBalance  # borrow.borrowedAmount
             borrow_usd = borrow.effectiveBorrowBalanceValue / ONE_4_DP
+            borrow_apy_str = f"{borrow.interestYield / ONE_14_DP:7.2f}"
         else:
             borrow_balance = 0
             borrow_usd = 0
+            borrow_apy_str = "{:>7}".format("-")
         print(
-                f"{sym:8} {factor:8.2f} {collateral_balance:20_} {collateral_usd:15.2f} {borrow_balance:20_} {borrow_usd:15.2f}"
+            f"{sym:14} {collateral_apy:7.2f} {borrow_apy_str} {factor:8.2f} {collateral_balance:20_} {collateral_usd:15.2f} {borrow_balance:20_} {borrow_usd:15.2f}"
         )
     print("~" * SEP)
     utilization = loan.borrowUtilisationRatio / ONE_4_DP

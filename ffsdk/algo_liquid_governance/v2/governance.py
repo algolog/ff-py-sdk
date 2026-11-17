@@ -18,7 +18,11 @@ from algosdk.atomic_transaction_composer import (
     TransactionWithSigner,
 )
 from algosdk.logic import get_application_address
-from ...config import PAYOUTS_GO_ONLINE_FEE
+from ...config import (
+    PAYOUTS_GO_ONLINE_FEE,
+    MIN_FEE,
+    USER_TXN_FEE,
+)
 from .constants.abi_contracts import abiDistributor
 from ...state_utils import get_global_state, get_local_state_at_app
 from ...transaction_utils import (
@@ -204,7 +208,11 @@ def prepareAddLiquidGovernanceEscrowTransactions(
     escrow = getDistributorLogicSig(userAddr)
 
     userCall = addEscrowNoteTransaction(
-        userAddr, escrow.address(), appId, "ga ", sp_fee(params, fee=2000)
+        userAddr,
+        escrow.address(),
+        appId,
+        "ga ",
+        sp_fee(params, fee=USER_TXN_FEE + MIN_FEE),
     )
 
     atc = AtomicTransactionComposer()
@@ -248,7 +256,9 @@ def prepareMintTransactions(
     """
     escrowAddr = getDistributorLogicSig(senderAddr).address()
 
-    sendAlgo = transferAlgoOrAsset(0, senderAddr, escrowAddr, amount, sp_fee(params, 0))
+    sendAlgo = transferAlgoOrAsset(
+        0, senderAddr, escrowAddr, amount, sp_fee(params, USER_TXN_FEE)
+    )
 
     atc = AtomicTransactionComposer()
     atc.add_method_call(
@@ -263,7 +273,7 @@ def prepareMintTransactions(
             dispenser.gAlgoId,
             ensureCommit,
         ],
-        sp=sp_fee(params, fee=4000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + 2 * MIN_FEE),
         note=note,
     )
     return remove_signer_and_group(atc.build_group())
@@ -296,7 +306,7 @@ def prepareUnmintPremintTransaction(
         app_id=distributor.appId,
         method=abiDistributor.get_method_by_name("unmint_premint"),
         method_args=[escrowAddr, amount],
-        sp=sp_fee(params, fee=4000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + 3 * MIN_FEE),
         note=note,
     )
     return remove_signer_and_group(atc.build_group())
@@ -329,7 +339,7 @@ def prepareUnmintTransactions(
         senderAddr,
         get_application_address(dispenser.appId),
         amount,
-        sp_fee(params, fee=0),
+        sp_fee(params, fee=USER_TXN_FEE),
     )
 
     atc = AtomicTransactionComposer()
@@ -343,7 +353,7 @@ def prepareUnmintTransactions(
             escrowAddr,
             dispenser.appId,
         ],
-        sp=sp_fee(params, fee=3000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + MIN_FEE),
         note=note,
     )
     return remove_signer_and_group(atc.build_group())
@@ -376,7 +386,7 @@ def prepareClaimPremintTransaction(
         app_id=distributor.appId,
         method=abiDistributor.get_method_by_name("claim_premint"),
         method_args=[escrowAddr, receiverAddr, dispenser.appId, dispenser.gAlgoId],
-        sp=sp_fee(params, fee=4000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + 3 * MIN_FEE),
     )
     txns = remove_signer_and_group(atc.build_group())
     return txns[0]
@@ -416,7 +426,7 @@ def prepareRegisterEscrowOnlineTransactions(
         raise ValueError("Unexpected register fee amount")
 
     sendAlgo = transferAlgoOrAsset(
-        0, senderAddr, escrowAddr, registerFeeAmount, sp_fee(params, 0)
+        0, senderAddr, escrowAddr, registerFeeAmount, sp_fee(params, USER_TXN_FEE)
     )
 
     atc = AtomicTransactionComposer()
@@ -435,7 +445,7 @@ def prepareRegisterEscrowOnlineTransactions(
             voteLastRound,
             voteKeyDilution,
         ],
-        sp=sp_fee(params, fee=3000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + MIN_FEE),
     )
     return remove_signer_and_group(atc.build_group())
 
@@ -462,7 +472,7 @@ def prepareRegisterEscrowOfflineTransaction(
         app_id=distributor.appId,
         method=abiDistributor.get_method_by_name("register_offline"),
         method_args=[escrowAddr],
-        sp=sp_fee(params, fee=2000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + MIN_FEE),
     )
     txns = remove_signer_and_group(atc.build_group())
     return txns[0]
@@ -494,7 +504,7 @@ def prepareCommitOrVoteTransaction(
         app_id=distributor.appId,
         method=abiDistributor.get_method_by_name("governance"),
         method_args=[escrowAddr, destAddr, note],
-        sp=sp_fee(params, fee=2000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + MIN_FEE),
     )
     txns = remove_signer_and_group(atc.build_group())
     return txns[0]
@@ -526,11 +536,15 @@ def prepareRemoveLiquidGovernanceEscrowTransactions(
         method=abiDistributor.get_method_by_name("remove_escrow"),
         method_args=[escrowAddr],
         accounts=[ownerAddr],
-        sp=sp_fee(params, fee=5000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + 3 * MIN_FEE),
     )
     txns = remove_signer_and_group(atc.build_group())
+    # escrow is rekeyed to the sender so its txn is signed by the sender
     optOutTx = ApplicationCloseOutTxn(
-        escrowAddr, sp_fee(params, fee=0), distributor.appId, rekey_to=escrowAddr
+        escrowAddr,
+        sp_fee(params, fee=USER_TXN_FEE),
+        distributor.appId,
+        rekey_to=escrowAddr,
     )
     return [txns[0], optOutTx]
 
@@ -558,7 +572,7 @@ def prepareBurnTransactions(
         senderAddr,
         get_application_address(dispenser.appId),
         amount,
-        sp_fee(params, fee=0),
+        sp_fee(params, fee=USER_TXN_FEE),
     )
 
     atc = AtomicTransactionComposer()
@@ -568,7 +582,7 @@ def prepareBurnTransactions(
         app_id=distributor.appId,
         method=abiDistributor.get_method_by_name("burn"),
         method_args=[TransactionWithSigner(sendgALGO, signer), dispenser.appId],
-        sp=sp_fee(params, fee=3000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + MIN_FEE),
     )
     return remove_signer_and_group(atc.build_group())
 
@@ -594,7 +608,7 @@ def prepareCloseOutEscrowTransactions(
     if isOnline:
         userPermissionToRegisterOffline = PaymentTxn(
             senderAddr,
-            sp_fee(params, fee=2000),
+            sp_fee(params, fee=USER_TXN_FEE + MIN_FEE),
             escrow.address(),
             0,
             note=b"register offline",
@@ -608,7 +622,7 @@ def prepareCloseOutEscrowTransactions(
     # close out escrow
     userPermissionToCloseOut = PaymentTxn(
         senderAddr,
-        sp_fee(params, fee=2000),
+        sp_fee(params, fee=USER_TXN_FEE + MIN_FEE),
         escrow.address(),
         0,
         note=b"close out",

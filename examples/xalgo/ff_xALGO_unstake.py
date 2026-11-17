@@ -1,6 +1,7 @@
 from ffsdk.client import FFMainnetClient
 from algosdk.v2client.algod import AlgodClient
 from algosdk.transaction import assign_group_id
+from algosdk.atomic_transaction_composer import AccountTransactionSigner
 from ffsdk.state_utils import AlgodIndexerCombo, get_balances
 from ffsdk.lend.datatypes import Account
 from ffsdk.lend.opup import prefixWithOpUp
@@ -13,6 +14,7 @@ from ffutils import ask_sign_and_send
 from decimal import Decimal
 
 USER_ACCOUNT = Account(addr="", sk="")
+user_signer = AccountTransactionSigner(USER_ACCOUNT.sk)
 
 algod_address = "https://mainnet-api.algonode.cloud"
 algod_token = ""
@@ -64,4 +66,4 @@ print(f"opup budget: {opup_budget}")
 txns = prefixWithOpUp(ff_client.lending.opup, sender, txns, opup_budget, params)
 
 txn_group = assign_group_id(txns)
-ask_sign_and_send(algod, txn_group, USER_ACCOUNT.sk, simulate=True)
+ask_sign_and_send(algod, txn_group, user_signer, simulate=True)

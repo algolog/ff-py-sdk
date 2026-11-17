@@ -7,6 +7,7 @@ from algosdk.transaction import (
 )
 from ..transaction_utils import sp_fee, transferAlgoOrAsset
 from .datatypes import ReferrerTransaction, ReferrerGroupTransaction
+from ..config import USER_TXN_FEE, MIN_FEE
 
 
 def getReferrerLogicSig(referrerAddr: str) -> LogicSigAccount:
@@ -48,7 +49,11 @@ def prepareReferrerOptIntoAsset(
     # generate transactions
     MIN_BALANCE = int(0.1e6)
     minBalancePayment = transferAlgoOrAsset(
-        0, senderAddr, lsig.address(), MIN_BALANCE, sp_fee(params, fee=2000)
+        0,
+        senderAddr,
+        lsig.address(),
+        MIN_BALANCE,
+        sp_fee(params, fee=USER_TXN_FEE + MIN_FEE),
     )
     assetOptIn = transferAlgoOrAsset(
         assetId, lsig.address(), lsig.address(), 0, sp_fee(params, fee=0)
@@ -69,7 +74,7 @@ def prepareClaimReferrerFees(
 
     # generate transactions
     groupFeePayment = transferAlgoOrAsset(
-        0, senderAddr, senderAddr, 0, sp_fee(params, 2000)
+        0, senderAddr, senderAddr, 0, sp_fee(params, USER_TXN_FEE + MIN_FEE)
     )
     claim = transferAlgoOrAsset(
         assetId, lsig.address(), referrerAddr, amount, sp_fee(params, 0)

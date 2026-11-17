@@ -31,6 +31,7 @@ from ..transaction_utils import (
 )
 from .abi_contracts import depositStakingABIContract
 from ..state_utils import get_global_state, get_balances, get_local_state_at_app
+from ..config import MIN_FEE, USER_TXN_FEE
 
 
 def retrieveDepositStakingInfo(
@@ -159,7 +160,9 @@ def retrieveUserDepositStakingLocalState(
         raise ValueError(
             f"Could not find deposit staking {depositStakingAppId} in escrow {escrowAddr}"
         )
-    user_staking_state = depositStakingLocalState(state, depositStakingAppId, escrowAddr)
+    user_staking_state = depositStakingLocalState(
+        state, depositStakingAppId, escrowAddr
+    )
     holdings = get_balances(indexerClient, escrowAddr)
     user_staking_state.optedIntoAssets = set(holdings.keys())
 
@@ -183,7 +186,11 @@ def prepareAddDepositStakingEscrow(
     escrow = Account(addr=address, sk=key)
 
     userCall = addEscrowNoteTransaction(
-        userAddr, escrow.addr, depositStakingAppId, "fa ", sp_fee(params, fee=2000)
+        userAddr,
+        escrow.addr,
+        depositStakingAppId,
+        "fa ",
+        sp_fee(params, fee=USER_TXN_FEE + MIN_FEE),
     )
 
     atc = AtomicTransactionComposer()
@@ -230,7 +237,7 @@ def prepareOptDepositStakingEscrowIntoAsset(
         app_id=depositStakingAppId,
         method=depositStakingABIContract.get_method_by_name("opt_escrow_into_asset"),
         method_args=[escrowAddr, poolAppId, fAssetId, stakeIndex],
-        sp=sp_fee(params, fee=2000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + MIN_FEE),
     )
     txns = remove_signer_and_group(atc.build_group())
     return txns[0]
@@ -266,7 +273,7 @@ def prepareSyncStakeInDepositStakingEscrow(
         app_id=depositStakingAppId,
         method=depositStakingABIContract.get_method_by_name("sync_stake"),
         method_args=[escrowAddr, poolAppId, fAssetId, stakeIndex],
-        sp=sp_fee(params, fee=2000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + MIN_FEE),
     )
 
     txns = remove_signer_and_group(atc.build_group())
@@ -302,7 +309,7 @@ def prepareClaimRewardsOfDepositStakingEscrow(
         app_id=depositStakingAppId,
         method=depositStakingABIContract.get_method_by_name("claim_rewards"),
         method_args=[escrowAddr, receiverAddr, stakeIndex],
-        sp=sp_fee(params, fee=4000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + 3 * MIN_FEE),
     )
     txns = remove_signer_and_group(atc.build_group())
     txns[0].foreign_assets = rewardAssetIds
@@ -360,7 +367,7 @@ def prepareWithdrawFromDepositStakingEscrow(
             remainDeposited,
             stakeIndex,
         ],
-        sp=sp_fee(params, fee=6000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + 5 * MIN_FEE),
     )
     txns = remove_signer_and_group(atc.build_group())
     return txns[0]
@@ -395,7 +402,7 @@ def prepareOptOutDepositStakingEscrowFromAsset(
             "close_out_escrow_from_asset"
         ),
         method_args=[escrowAddr, get_application_address(poolAppId), fAssetId],
-        sp=sp_fee(params, fee=3000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + 2 * MIN_FEE),
     )
     txns = remove_signer_and_group(atc.build_group())
     return txns[0]
@@ -423,9 +430,14 @@ def prepareRemoveDepositStakingEscrow(
         app_id=depositStakingAppId,
         method=depositStakingABIContract.get_method_by_name("remove_f_staking_escrow"),
         method_args=[escrowAddr],
-        sp=sp_fee(params, fee=2000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + MIN_FEE),
     )
     txns = remove_signer_and_group(atc.build_group())
-    optOutTx = ApplicationCloseOutTxn(escrowAddr, params, depositStakingAppId)
-    closeToTx = removeEscrowNoteTransaction(escrowAddr, userAddr, "fr ", params)
+    # escrow is rekeyed back to the user so its txns are signed by the user
+    optOutTx = ApplicationCloseOutTxn(
+        escrowAddr, sp_fee(params, fee=USER_TXN_FEE), depositStakingAppId
+    )
+    closeToTx = removeEscrowNoteTransaction(
+        escrowAddr, userAddr, "fr ", sp_fee(params, fee=USER_TXN_FEE)
+    )
     return [txns[0], optOutTx, closeToTx]

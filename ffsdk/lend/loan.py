@@ -23,6 +23,7 @@ from .formulae import (
 from .deposit import retrievePoolManagerInfo
 from .oracle import getOraclePrices, prepareRefreshPricesInOracleAdapter
 from .abi_contracts import loanABIContract, poolABIContract
+from ..config import MIN_FEE, USER_TXN_FEE
 from ..transaction_utils import (
     signer,
     sp_fee,
@@ -427,7 +428,11 @@ def prepareCreateUserLoan(
     escrow = Account(addr=address, sk=key)
 
     userCall = addEscrowNoteTransaction(
-        userAddr, escrow.addr, loanAppId, "la ", sp_fee(params, fee=2000)
+        userAddr,
+        escrow.addr,
+        loanAppId,
+        "la ",
+        sp_fee(params, fee=USER_TXN_FEE + MIN_FEE),
     )
 
     atc = AtomicTransactionComposer()
@@ -487,7 +492,7 @@ def prepareAddCollateralToLoan(
             poolLoanIndex,
             poolManagerAppId,
         ],
-        sp=sp_fee(params, fee=2000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + MIN_FEE),
     )
     txns = remove_signer_and_group(atc.build_group())
     return txns[0]
@@ -539,7 +544,7 @@ def prepareSyncCollateralInLoan(
             poolManagerAppId,
             oracleAdapterAppId,
         ],
-        sp=sp_fee(params, fee=1000),
+        sp=sp_fee(params, fee=USER_TXN_FEE),
     )
     txns = remove_signer_and_group(atc.build_group())
     return refreshPrices[:-1] + txns
@@ -603,7 +608,7 @@ def prepareReduceCollateralFromLoan(
             poolManagerAppId,
             oracleAdapterAppId,
         ],
-        sp=sp_fee(params, fee=6000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + 5 * MIN_FEE),
     )
     txns = remove_signer_and_group(atc.build_group())
     return refreshPrices[:-1] + txns
@@ -658,7 +663,7 @@ def prepareSwapCollateralInLoanBegin(
             poolAppId,
             poolManagerAppId,
         ],
-        sp=sp_fee(params, fee=6000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + 5 * MIN_FEE),
     )
     txns = remove_signer_and_group(atc.build_group())
     return txns[0]
@@ -706,7 +711,7 @@ def prepareSwapCollateralInLoanEnd(
             poolManagerAppId,
             oracleAdapterAppId,
         ],
-        sp=sp_fee(params, fee=1000),
+        sp=sp_fee(params, fee=USER_TXN_FEE),
     )
     txns = remove_signer_and_group(atc.build_group())
     return refreshPrices[:-1] + txns
@@ -739,7 +744,7 @@ def prepareRemoveCollateralFromLoan(
         app_id=loanAppId,
         method=loanABIContract.get_method_by_name("remove_collateral"),
         method_args=[escrowAddr, fAssetId, poolAppId],
-        sp=sp_fee(params, fee=2000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + MIN_FEE),
     )
     txns = remove_signer_and_group(atc.build_group())
     return txns[0]
@@ -809,7 +814,7 @@ def prepareBorrowFromLoan(
             poolManagerAppId,
             oracleAdapterAppId,
         ],
-        sp=sp_fee(params, fee=8000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + 7 * MIN_FEE),
     )
     txns = remove_signer_and_group(atc.build_group())
     return refreshPrices[:-1] + txns
@@ -846,7 +851,7 @@ def prepareSwitchBorrowTypeInLoan(
         app_id=loanAppId,
         method=loanABIContract.get_method_by_name("switch_borrow_type"),
         method_args=[escrowAddr, assetId, maxStableRate, poolAppId, poolManagerAppId],
-        sp=sp_fee(params, fee=6000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + 5 * MIN_FEE),
     )
     txns = remove_signer_and_group(atc.build_group())
     return txns[0]
@@ -888,7 +893,7 @@ def prepareRepayLoanWithTxn(
         userAddr,
         get_application_address(poolAppId),
         repayAmount,
-        sp_fee(params, fee=0),
+        sp_fee(params, fee=USER_TXN_FEE),
     )
 
     atc = AtomicTransactionComposer()
@@ -908,7 +913,7 @@ def prepareRepayLoanWithTxn(
             poolAppId,
             poolManagerAppId,
         ],
-        sp=sp_fee(params, fee=10000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + 8 * MIN_FEE),
     )
     return remove_signer_and_group(atc.build_group())
 
@@ -963,7 +968,7 @@ def prepareRepayLoanWithCollateral(
             poolAppId,
             poolManagerAppId,
         ],
-        sp=sp_fee(params, fee=14000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + 13 * MIN_FEE),
     )
     txns = remove_signer_and_group(atc.build_group())
     return txns[0]
@@ -1019,7 +1024,7 @@ def prepareLiquidateLoan(
         liquidatorAddr,
         get_application_address(borPoolAppId),
         repayAmount,
-        sp_fee(params, fee=0),
+        sp_fee(params, fee=USER_TXN_FEE),
     )
 
     atc = AtomicTransactionComposer()
@@ -1028,7 +1033,7 @@ def prepareLiquidateLoan(
         app_id=loanAppId,
         method=loanABIContract.get_method_by_name("liquidate"),
         sender=liquidatorAddr,
-        sp=sp_fee(params, fee=10000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + 8 * MIN_FEE),
         signer=signer,
         method_args=[
             TransactionWithSigner(refreshPrices[-1], signer),
@@ -1078,7 +1083,7 @@ def prepareRebalanceUpLoan(
         app_id=loanAppId,
         method=loanABIContract.get_method_by_name("rebalance_up"),
         method_args=[escrowAddr, assetId, poolAppId, poolManagerAppId],
-        sp=sp_fee(params, fee=5000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + 4 * MIN_FEE),
     )
     txns = remove_signer_and_group(atc.build_group())
     return txns[0]
@@ -1113,7 +1118,7 @@ def prepareRebalanceDownLoan(
         app_id=loanAppId,
         method=loanABIContract.get_method_by_name("rebalance_down"),
         method_args=[escrowAddr, assetId, poolAppId, poolManagerAppId],
-        sp=sp_fee(params, fee=5000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + 4 * MIN_FEE),
     )
     txns = remove_signer_and_group(atc.build_group())
     return txns[0]
@@ -1141,12 +1146,15 @@ def prepareRemoveUserLoan(
         app_id=loanAppId,
         method=loanABIContract.get_method_by_name("remove_loan"),
         method_args=[escrowAddr],
-        sp=sp_fee(params, fee=4000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + MIN_FEE),
     )
     txns = remove_signer_and_group(atc.build_group())
-    optOutTx = ApplicationCloseOutTxn(escrowAddr, sp_fee(params, fee=0), loanAppId)
+    # escrow is rekeyed back to the user so its txns are signed by the user
+    optOutTx = ApplicationCloseOutTxn(
+        escrowAddr, sp_fee(params, fee=USER_TXN_FEE), loanAppId
+    )
     closeToTx = removeEscrowNoteTransaction(
-        escrowAddr, userAddr, "lr ", sp_fee(params, fee=0)
+        escrowAddr, userAddr, "lr ", sp_fee(params, fee=USER_TXN_FEE)
     )
     return [txns[0], optOutTx, closeToTx]
 
@@ -1181,7 +1189,7 @@ def prepareFlashLoanBegin(
         app_id=appId,
         method=poolABIContract.get_method_by_name("flash_loan_begin"),
         method_args=[borrowAmount, txnIndexForFlashLoanEnd, receiverAddr, assetId],
-        sp=sp_fee(params, fee=2000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + MIN_FEE),
     )
     txns = remove_signer_and_group(atc.build_group())
     return txns[0]
@@ -1213,7 +1221,7 @@ def prepareFlashLoanEnd(
         userAddr,
         get_application_address(appId),
         repaymentAmount,
-        sp_fee(params, fee=0),
+        sp_fee(params, fee=USER_TXN_FEE),
     )
 
     atc = AtomicTransactionComposer()
@@ -1223,7 +1231,7 @@ def prepareFlashLoanEnd(
         app_id=appId,
         method=poolABIContract.get_method_by_name("flash_loan_end"),
         method_args=[TransactionWithSigner(sendAsset, signer), reserveAddr, assetId],
-        sp=sp_fee(params, fee=3000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + MIN_FEE),
     )
     return remove_signer_and_group(atc.build_group())
 

@@ -30,6 +30,7 @@ from .formulae import (
 from .utils import getEscrows
 from .oracle import getOraclePrices
 from .abi_contracts import depositsABIContract, poolABIContract
+from ..config import MIN_FEE, USER_TXN_FEE
 from ..transaction_utils import (
     signer,
     sp_fee,
@@ -333,7 +334,11 @@ def prepareAddDepositEscrowToDeposits(
     escrow = Account(addr=address, sk=key)
 
     userCall = addEscrowNoteTransaction(
-        userAddr, escrow.addr, depositsAppId, "da ", sp_fee(params, fee=2000)
+        userAddr,
+        escrow.addr,
+        depositsAppId,
+        "da ",
+        sp_fee(params, fee=USER_TXN_FEE + MIN_FEE),
     )
 
     atc = AtomicTransactionComposer()
@@ -387,7 +392,7 @@ def prepareOptDepositEscrowIntoAssetInDeposits(
             fAssetId,
             poolManagerIndex,
         ],
-        sp=sp_fee(params, fee=2000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + MIN_FEE),
     )
     txns = remove_signer_and_group(atc.build_group())
     return txns[0]
@@ -423,7 +428,7 @@ def prepareDepositIntoPool(
         userAddr,
         get_application_address(appId),
         assetAmount,
-        sp_fee(params, fee=0),
+        sp_fee(params, fee=USER_TXN_FEE),
     )
 
     atc = AtomicTransactionComposer()
@@ -439,7 +444,7 @@ def prepareDepositIntoPool(
             fAssetId,
             poolManagerAppId,
         ],
-        sp=sp_fee(params, fee=4000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + 2 * MIN_FEE),
         note=note,
     )
     return remove_signer_and_group(atc.build_group())
@@ -495,7 +500,7 @@ def prepareWithdrawFromDepositEscrowInDeposits(
             remainDeposited,
             poolManagerIndex,
         ],
-        sp=sp_fee(params, fee=2000 if remainDeposited else 6000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + (1 if remainDeposited else 5) * MIN_FEE),
     )
     txns = remove_signer_and_group(atc.build_group())
     return txns[0]
@@ -531,7 +536,7 @@ def prepareWithdrawFromPool(
         userAddr,
         get_application_address(poolAppId),
         fAssetAmount,
-        sp_fee(params, fee=0),
+        sp_fee(params, fee=USER_TXN_FEE),
     )
 
     atc = AtomicTransactionComposer()
@@ -548,7 +553,7 @@ def prepareWithdrawFromPool(
             fAssetId,
             poolManagerAppId,
         ],
-        sp=sp_fee(params, fee=5000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + 3 * MIN_FEE),
     )
 
     return remove_signer_and_group(atc.build_group())
@@ -578,7 +583,7 @@ def prepareUpdatePoolInterestIndexes(
         app_id=appId,
         method=poolABIContract.get_method_by_name("update_pool_interest_indexes"),
         method_args=[poolManagerAppId],
-        sp=sp_fee(params, fee=2000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + MIN_FEE),
     )
     txns = remove_signer_and_group(atc.build_group())
     return txns[0]
@@ -611,7 +616,7 @@ def prepareOptOutDepositEscrowFromAssetInDeposits(
         app_id=depositsAppId,
         method=depositsABIContract.get_method_by_name("close_out_escrow_from_asset"),
         method_args=[escrowAddr, get_application_address(poolAppId), fAssetId],
-        sp=sp_fee(params, fee=2000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + MIN_FEE),
     )
     txns = remove_signer_and_group(atc.build_group())
     return txns[0]
@@ -639,11 +644,14 @@ def prepareRemoveDepositEscrowFromDeposits(
         app_id=depositsAppId,
         method=depositsABIContract.get_method_by_name("remove_deposit_escrow"),
         method_args=[escrowAddr],
-        sp=sp_fee(params, fee=4000),
+        sp=sp_fee(params, fee=USER_TXN_FEE + MIN_FEE),
     )
     txns = remove_signer_and_group(atc.build_group())
-    optOutTx = ApplicationCloseOutTxn(escrowAddr, sp_fee(params, fee=0), depositsAppId)
+    # escrow is rekeyed back to the user so its txns are signed by the user
+    optOutTx = ApplicationCloseOutTxn(
+        escrowAddr, sp_fee(params, fee=USER_TXN_FEE), depositsAppId
+    )
     closeToTx = removeEscrowNoteTransaction(
-        escrowAddr, userAddr, "dr ", sp_fee(params, fee=0)
+        escrowAddr, userAddr, "dr ", sp_fee(params, fee=USER_TXN_FEE)
     )
     return [txns[0], optOutTx, closeToTx]
